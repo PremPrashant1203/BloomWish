@@ -1,0 +1,1797 @@
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700&display=swap");
+
+@import "tailwindcss";
+
+/* =========================
+   RESET
+========================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: #fff9f7;
+  color: #4d4a58;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  border: none;
+}
+
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+  width: 100%;
+  height: 64px;
+  background: #fffdfb;
+  border-bottom: 1px solid #eee4e8;
+}
+
+.navbar-inner {
+  width: 100%;
+  max-width: 1400px;
+  height: 100%;
+  margin: auto;
+
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #d34d80;
+
+  font-family: "Dancing Script", cursive;
+  font-size: 30px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.logo-flower {
+  font-family: sans-serif;
+  font-size: 25px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 27px;
+}
+
+.nav-links a {
+  color: #777384;
+  text-decoration: none;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition: 0.25s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #d84f84;
+}
+
+.create-btn {
+  padding: 11px 20px;
+
+  background: #d84f84;
+  color: white;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  box-shadow: 0 6px 15px rgba(216, 79, 132, 0.2);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.create-btn:hover {
+  transform: translateY(-2px);
+  background: #cb4278;
+
+  box-shadow:
+    0 10px 22px rgba(216, 79, 132, 0.3);
+}
+
+.create-btn:active {
+  transform: scale(0.96);
+}
+/* =====================================================
+   STEPPER
+===================================================== */
+
+.stepper {
+  width: 100%;
+
+  background: #fffafa;
+
+  border-bottom: 1px solid #f1dce4;
+}
+
+
+/* =====================================================
+   INNER
+===================================================== */
+
+.stepper-inner {
+  width: 92%;
+  max-width: 900px;
+
+  margin: 0 auto;
+
+  display: flex;
+  align-items: flex-start;
+}
+
+
+/* =====================================================
+   STEP WRAPPER
+===================================================== */
+
+.step-wrapper {
+  flex: 1;
+
+  display: flex;
+  align-items: flex-start;
+}
+
+
+/* =====================================================
+   STEP
+===================================================== */
+
+.step {
+  min-width: 48px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  position: relative;
+
+  z-index: 2;
+}
+
+
+/* =====================================================
+   STEP NUMBER
+===================================================== */
+
+.step-number {
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+
+  border: 1px solid #f2bfd1;
+
+  background: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 9px;
+
+  color: #d8a7b9;
+
+  transition:
+    background 0.5s ease,
+    color 0.5s ease,
+    border-color 0.5s ease,
+    transform 0.4s ease;
+}
+
+
+/* =====================================================
+   ACTIVE STEP
+===================================================== */
+
+.step.active .step-number {
+  background: #df4f84;
+
+  border-color: #df4f84;
+
+  color: #fff;
+
+  transform: scale(1.05);
+}
+
+
+/* =====================================================
+   LABEL
+===================================================== */
+
+.step-label {
+  margin-top: 4px;
+
+  font-size: 8px;
+
+  color: #c5a8b5;
+
+  transition:
+    color 0.4s ease;
+}
+
+
+.step.active .step-label {
+  color: #df4f84;
+}
+
+
+/* =====================================================
+   CONNECTING LINE
+===================================================== */
+
+.step-line {
+  flex: 1;
+
+  height: 1px;
+
+  background: #f1cbd8;
+
+  margin-top: 9px;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+
+/* =====================================================
+   LINE PROGRESS
+===================================================== */
+
+.step-line-progress {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 0%;
+  height: 100%;
+
+  background: #df4f84;
+
+  transition:
+    width 0.6s ease;
+}
+
+
+/* =====================================================
+   FILLED LINE
+===================================================== */
+
+.step-line-progress.filled {
+  width: 100%;
+}
+
+/* =========================
+   FLOWER SELECTION PAGE
+========================= */
+
+.flower-page {
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(255, 227, 239, 0.45),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 25%,
+      rgba(255, 239, 220, 0.35),
+      transparent 30%
+    ),
+    #fff9f7;
+}
+
+.flower-main {
+  width: 100%;
+  max-width: 1450px;
+
+  margin: auto;
+
+  padding: 40px 24px 60px;
+}
+
+
+/* =========================
+   FLOWER HEADING
+========================= */
+
+.flower-heading {
+  text-align: center;
+
+  max-width: 850px;
+
+  margin: 0 auto;
+}
+
+.flower-heading h1 {
+  margin: 0;
+
+  color: #d14d7e;
+
+  font-family: "Dancing Script", cursive;
+
+  font-size: clamp(42px, 5vw, 56px);
+
+  font-weight: 700;
+
+  line-height: 1.1;
+}
+
+.flower-heading p {
+  margin: 10px 0 0;
+
+  color: #9994a1;
+
+  font-size: 16px;
+}
+
+.flower-heading p span {
+  font-size: 14px;
+}
+
+.description {
+  margin-top: 13px;
+
+  color: #aaa4ae;
+
+  font-size: 12px;
+
+  line-height: 1.7;
+}
+
+
+/* =========================
+   FLOWER GRID
+========================= */
+
+.flowers-grid {
+  width: 100%;
+
+  max-width: 1320px;
+
+  margin: 28px auto 0;
+
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 16px;
+}
+
+
+/* =========================
+   CARD ANIMATION
+========================= */
+
+.flower-card-animation {
+  opacity: 0;
+
+  animation:
+    cardAppear 0.6s ease forwards;
+}
+
+
+/* =========================
+   FLOWER CARD
+========================= */
+
+.flower-card {
+  position: relative;
+
+  height: 155px;
+
+  padding: 13px 12px 10px;
+
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.96);
+
+  border: 2px solid transparent;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transform-style: preserve-3d;
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease,
+    transform 0.2s ease;
+
+  box-shadow:
+    0 8px 22px rgba(111, 76, 95, 0.08);
+}
+
+.flower-card:hover {
+  transform: translateY(-5px);
+
+  box-shadow:
+    0 18px 35px rgba(213, 82, 131, 0.16);
+
+  border-color: #f7d7e4;
+}
+
+.flower-card.selected {
+  border-color: #e85b95;
+
+  background: #fff9fc;
+
+  box-shadow:
+    0 12px 30px rgba(232, 91, 149, 0.22);
+}
+
+
+/* =========================
+   FLOWER IMAGE
+========================= */
+
+.flower-image-wrapper {
+  width: 100%;
+  height: 92px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translateZ(20px);
+}
+
+.flower-image {
+  width: auto;
+  height: 82px;
+
+  max-width: 125px;
+
+  object-fit: contain;
+
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.3s ease;
+}
+
+.flower-card:hover .flower-image {
+  transform: scale(1.1) translateY(-3px);
+}
+
+.flower-card.selected .flower-image {
+  transform: scale(1.06);
+}
+
+
+/* =========================
+   FLOWER NAME
+========================= */
+
+.flower-card h2 {
+  margin: 7px 0 0;
+
+  color: #4f4b58;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  transform: translateZ(15px);
+}
+
+
+/* =========================
+   CHECK MARK
+========================= */
+
+.check-mark {
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  background: #e75a93;
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  opacity: 0;
+
+  transform: scale(0);
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+
+  z-index: 5;
+}
+
+.check-mark.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+/* =========================
+   BOTTOM SECTION
+========================= */
+
+.next-section {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 100%;
+
+  margin-top: 30px;
+}
+
+
+/* =========================
+   TOTAL FLOWERS
+========================= */
+
+.total-flowers {
+  margin: 0 0 18px;
+
+  color: #4f4b58;
+
+  font-size: 18px;
+
+  font-weight: 400;
+
+  text-align: center;
+}
+
+
+/* =========================
+   NAVIGATION BUTTONS
+========================= */
+
+.navigation-buttons {
+  display: flex;
+
+  flex-direction: row;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 40px;
+
+  width: 100%;
+}
+
+
+/* =========================
+   BACK BUTTON
+========================= */
+
+.back-button {
+  position: static;
+
+  min-width: 125px;
+
+  padding: 12px 26px;
+
+  border: 2px solid #f2c9da;
+
+  border-radius: 30px;
+
+  background: white;
+
+  color: #77727f;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    color 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.back-button:hover {
+  color: #d94f86;
+
+  background: #fff0f6;
+
+  border-color: #e86b9d;
+
+  transform:
+    translateY(-4px)
+    scale(1.06);
+
+  box-shadow:
+    0 8px 20px rgba(217, 79, 134, 0.25);
+}
+
+.back-button:active {
+  transform:
+    translateY(-1px)
+    scale(0.98);
+}
+
+
+/* =========================
+   NEXT BUTTON
+========================= */
+
+.next-button {
+  min-width: 122px;
+
+  padding: 12px 26px;
+
+  border-radius: 30px;
+
+  background: #e7a5c1;
+
+  color: white;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.next-button:not(:disabled) {
+  background: #dd5b91;
+
+  box-shadow:
+    0 7px 20px rgba(221, 91, 145, 0.2);
+}
+
+.next-button:not(:disabled):hover {
+  transform:
+    translateY(-4px)
+    scale(1.04);
+
+  background: #d54c85;
+
+  box-shadow:
+    0 12px 25px rgba(221, 91, 145, 0.3);
+}
+
+.next-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.next-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(25px)
+      scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+/* =========================================================
+   CARD SELECTION
+========================================================= */
+
+.card-image {
+  width: auto;
+  height: 100px;
+  max-width: 150px;
+
+  object-fit: contain;
+
+  transition:
+    transform 0.35s ease,
+    filter 0.3s ease;
+}
+
+.flower-card:hover .card-image {
+  transform: scale(1.08) translateY(-3px);
+}
+
+.card-selected {
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #e75a93;
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  z-index: 10;
+
+  animation: cardCheck 0.25s ease;
+}
+
+@keyframes cardCheck {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* =========================================================
+   BOUQUET PREVIEW PAGE
+========================================================= */
+/* =========================================================
+   BOUQUET PAGE
+========================================================= */
+
+.bouquet-page {
+  width: 100%;
+  min-height: calc(100vh - 125px);
+
+  padding: 25px 20px 30px;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      #fff0f6 0%,
+      #fff7f8 45%,
+      #fffafa 100%
+    );
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.bouquet-heading {
+  width: 100%;
+
+  text-align: center;
+
+  position: relative;
+  z-index: 100;
+}
+
+.bouquet-heading h1 {
+  margin: 0;
+
+  font-family: "Dancing Script", cursive;
+
+  font-size: 54px;
+  font-weight: 600;
+
+  line-height: 1.05;
+
+  color: #d94b83;
+}
+
+.bouquet-heading p {
+  margin: 12px 0 0;
+
+  font-size: 15px;
+
+  color: #96919d;
+}
+
+
+/* =========================================================
+   BOUQUET STAGE
+========================================================= */
+
+.bouquet-stage {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin-top: 5px;
+}
+
+
+/* =========================================================
+   BOUQUET CONTAINER
+========================================================= */
+
+.bouquet-container {
+  position: relative;
+
+  width: 560px;
+  height: 500px;
+
+  margin: 0 auto;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   GREENERY BACK LAYER
+========================================================= */
+
+.bouquet-greenery-layer {
+  position: absolute;
+
+  left: 0;
+  top: 15px;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 5;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   GREENERY
+========================================================= */
+
+.bouquet-greenery {
+  position: absolute;
+
+  left: 50%;
+  top: 20px;
+
+  width: 390px;
+
+  display: flex;
+  justify-content: center;
+
+  transform:
+    translateX(-50%);
+
+  pointer-events: none;
+}
+
+
+/* greenery image */
+
+.bouquet-greenery img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  object-fit: contain;
+
+  pointer-events: none;
+  user-select: none;
+
+  filter:
+    drop-shadow(
+      0 7px 10px rgba(50, 80, 50, 0.12)
+    );
+}
+
+
+/* =========================================================
+   GREENERY POSITIONS
+========================================================= */
+
+/* Main greenery */
+
+.greenery-item-0 {
+  left: 50%;
+  top: 35px;
+
+  width: 390px;
+
+  transform:
+    translateX(-50%)
+    rotate(-3deg);
+
+  z-index: 5;
+}
+
+
+/* Second greenery */
+
+.greenery-item-1 {
+  left: 50%;
+  top: 40px;
+
+  width: 370px;
+
+  transform:
+    translateX(-50%)
+    rotate(4deg);
+
+  z-index: 6;
+}
+
+
+/* Third greenery */
+
+.greenery-item-2 {
+  left: 50%;
+  top: 55px;
+
+  width: 350px;
+
+  transform:
+    translateX(-50%)
+    rotate(-2deg);
+
+  z-index: 7;
+}
+
+
+/* Fourth greenery */
+
+.greenery-item-3 {
+  left: 50%;
+  top: 60px;
+
+  width: 330px;
+
+  transform:
+    translateX(-50%)
+    rotate(2deg);
+
+  z-index: 8;
+}
+
+
+/* Fifth greenery */
+
+.greenery-item-4 {
+  left: 50%;
+  top: 65px;
+
+  width: 315px;
+
+  transform:
+    translateX(-50%)
+    rotate(-2deg);
+
+  z-index: 9;
+}
+
+
+/* Sixth greenery */
+
+.greenery-item-5 {
+  left: 50%;
+  top: 70px;
+
+  width: 300px;
+
+  transform:
+    translateX(-50%)
+    rotate(2deg);
+
+  z-index: 9;
+}
+
+
+/* =========================================================
+   FLOWER LAYER
+========================================================= */
+
+.bouquet-flower-layer {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 20;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   FLOWER
+========================================================= */
+
+.bouquet-flower {
+  position: absolute;
+
+  display: block;
+
+  transform-origin:
+    center center;
+
+  pointer-events: none;
+
+  animation:
+    bouquetFlowerIn
+    0.45s ease both;
+}
+
+
+/* =========================================================
+   FLOWER IMAGE
+========================================================= */
+
+.bouquet-flower img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  object-fit: contain;
+
+  pointer-events: none;
+  user-select: none;
+
+  filter:
+    drop-shadow(
+      0 6px 8px rgba(70, 40, 55, 0.12)
+    );
+}
+
+
+/* =========================================================
+   FLOWER CLIPPING
+========================================================= */
+
+/*
+   Long stems of Lily / Orchid / Tulip should stay
+   inside the greenery area instead of hanging down.
+*/
+
+.bouquet-flower {
+  max-height: 220px;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   FLOWER ANIMATION
+========================================================= */
+
+@keyframes bouquetFlowerIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateX(-50%)
+      translateY(15px)
+      scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+  }
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+.bouquet-navigation {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 75px;
+
+  margin-top: -5px;
+
+  position: relative;
+
+  z-index: 100;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.bouquet-navigation .back-button {
+  min-width: 115px;
+
+  padding: 11px 25px;
+
+  border:
+    2px solid #f1c7d8;
+
+  border-radius: 30px;
+
+  background: #ffffff;
+
+  color: #77717e;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    0.2s ease;
+}
+
+.bouquet-navigation .back-button:hover {
+  background: #fff5f9;
+
+  border-color: #e78aad;
+}
+
+
+/* =========================================================
+   CONTINUE BUTTON
+========================================================= */
+
+.bouquet-navigation .next-button {
+  min-width: 130px;
+
+  padding: 12px 25px;
+
+  border: none;
+
+  border-radius: 30px;
+
+  background: #dc5790;
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 18px
+    rgba(220, 87, 144, 0.22);
+
+  transition:
+    0.2s ease;
+}
+
+.bouquet-navigation .next-button:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 10px 22px
+    rgba(220, 87, 144, 0.28);
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .bouquet-heading h1 {
+    font-size: 48px;
+  }
+
+  .bouquet-heading p {
+    font-size: 14px;
+  }
+
+  .bouquet-container {
+    transform:
+      scale(0.88);
+
+    transform-origin:
+      top center;
+
+    margin-bottom: -55px;
+  }
+
+  .bouquet-navigation {
+    margin-top: -35px;
+
+    gap: 55px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .bouquet-page {
+    padding:
+      20px 5px 25px;
+  }
+
+  .bouquet-heading h1 {
+    font-size: 42px;
+  }
+
+  .bouquet-heading p {
+    font-size: 13px;
+
+    margin-top: 8px;
+  }
+
+  .bouquet-container {
+    width: 560px;
+    height: 490px;
+
+    transform:
+      scale(0.70);
+
+    transform-origin:
+      top center;
+
+    margin-bottom: -120px;
+  }
+
+  .bouquet-navigation {
+    gap: 25px;
+
+    margin-top: -70px;
+  }
+
+  .bouquet-navigation .back-button {
+    min-width: 105px;
+
+    padding:
+      10px 20px;
+
+    font-size: 13px;
+  }
+
+  .bouquet-navigation .next-button {
+    min-width: 120px;
+
+    padding:
+      11px 20px;
+
+    font-size: 13px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .bouquet-heading h1 {
+    font-size: 38px;
+  }
+
+  .bouquet-heading p {
+    font-size: 12px;
+  }
+
+  .bouquet-container {
+    transform:
+      scale(0.62);
+
+    margin-bottom: -150px;
+  }
+
+  .bouquet-navigation {
+    gap: 15px;
+  }
+}
+
+/* =====================================================
+   BOUQUET CHOICE PAGE
+===================================================== */
+
+.choice-page {
+  min-height: calc(100vh - 120px);
+  padding: 45px 30px 70px;
+}
+
+/* =====================================================
+   HEADING
+===================================================== */
+
+.choice-heading {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.choice-heading h1 {
+  margin: 0;
+  font-family: "Great Vibes", cursive;
+  font-size: 46px;
+  font-weight: 500;
+  color: #d94b82;
+}
+
+.choice-heading p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #8b7180;
+}
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.bouquet-choice-grid {
+  max-width: 900px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+/* =====================================================
+   INDIVIDUAL CARD
+===================================================== */
+
+.choice-card {
+  background: rgba(255, 255, 255, 0.75);
+
+  border: 1px solid #f1c6d7;
+  border-radius: 24px;
+
+  padding: 40px 35px;
+
+  text-align: center;
+
+  box-shadow: 0 10px 30px rgba(214, 78, 127, 0.08);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.choice-card:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 18px 40px rgba(214, 78, 127, 0.14);
+}
+
+/* =====================================================
+   ICON
+===================================================== */
+
+.choice-icon {
+  width: 70px;
+  height: 70px;
+
+  margin: 0 auto 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 38px;
+
+  background: #fff0f6;
+
+  border-radius: 50%;
+}
+
+/* =====================================================
+   CARD TITLE
+===================================================== */
+
+.choice-card h2 {
+  margin: 0 0 12px;
+
+  font-size: 23px;
+  font-weight: 500;
+
+  color: #403047;
+}
+
+/* =====================================================
+   CARD DESCRIPTION
+===================================================== */
+
+.choice-card p {
+  max-width: 330px;
+
+  margin: 0 auto 25px;
+
+  font-size: 14px;
+  line-height: 1.7;
+
+  color: #806f7b;
+}
+
+/* =====================================================
+   BUTTON
+===================================================== */
+
+.choice-button {
+  border: none;
+
+  padding: 12px 25px;
+
+  border-radius: 25px;
+
+  background: #dc5689;
+  color: white;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  box-shadow: 0 7px 18px rgba(220, 86, 137, 0.22);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.choice-button:hover {
+  background: #d4477d;
+
+  transform: translateY(-2px);
+}
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 700px) {
+
+  .choice-page {
+    padding: 35px 20px 50px;
+  }
+
+  .choice-heading h1 {
+    font-size: 38px;
+  }
+
+  .bouquet-choice-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .choice-card {
+    padding: 32px 25px;
+  }
+}
+
+
+
+
+/* NOW READY MADE BOUQUET */
+
+.ready-bouquet-card {
+  background: #ffffff;
+
+  border: 1px solid #f1c6d7;
+  border-radius: 20px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  min-height: 330px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+
+  box-shadow: 0 8px 25px rgba(210, 70, 120, 0.08);
+
+  transition: transform 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.ready-bouquet-card:hover {
+  transform: translateY(-5px);
+
+  box-shadow: 0 15px 35px rgba(210, 70, 120, 0.14);
+}
+
+.ready-bouquet-image {
+  width: 100%;
+  height: 190px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ready-bouquet-image img {
+  width: 170px;
+  height: 170px;
+
+  object-fit: contain;
+}
+
+.ready-bouquet-card h2 {
+  margin: 8px 0 5px;
+
+  font-size: 18px;
+  font-weight: 500;
+
+  color: #443441;
+}
+
+.ready-bouquet-card p {
+  margin: 0 10px 15px;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #806f7b;
+}
+
+/* =========================================
+   BloomWish Responsive Layout
+   ========================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Main page */
+
+.flower-page {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.flower-main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+
+/* Heading */
+
+.flower-heading {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.flower-heading h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.2;
+}
+
+.flower-heading p {
+  margin: 10px 0 0;
+  font-size: 16px;
+}
+
+.flower-heading .description {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* Flower grid */
+
+.flowers-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 900px) {
+  .flower-main {
+    padding: 30px 18px 50px;
+  }
+
+  .flowers-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+/* =========================================
+   PHONE
+   ========================================= */
+
+@media (max-width: 767px) {
+  .flower-page {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .flower-main {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px 8px 40px !important;
+  }
+
+  .flower-heading {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .flower-heading h1 {
+    font-size: 28px;
+  }
+
+  .flower-heading p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .flower-heading .description {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .flowers-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .flower-card-animation {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .flower-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .flower-card img {
+    width: 100%;
+    height: 135px;
+    object-fit: contain;
+  }
+
+  .flower-card h2 {
+    font-size: 11px;
+  }
+}
+
+/* =========================================
+   SMALL PHONE
+   ========================================= */
+
+@media (max-width: 400px) {
+  .flower-main {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  .flowers-grid {
+    gap: 7px !important;
+  }
+
+  .flower-card img {
+    height: 120px;
+  }
+
+  .flower-card h2 {
+    font-size: 10px;
+  }
+}

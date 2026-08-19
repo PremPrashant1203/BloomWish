@@ -1,0 +1,383 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+  background: #fff8f8;
+  color: #4f4650;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+.flower-page {
+  width: 100%;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 226, 237, 0.35),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #fff7f7 0%,
+      #fffafa 50%,
+      #fffdf8 100%
+    );
+}
+
+.flower-main {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+
+.flower-heading {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.flower-heading h1 {
+  margin: 0;
+  color: #d4477d;
+  font-family: cursive;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.2;
+}
+
+.flower-heading p {
+  margin: 10px 0 0;
+  color: #8c7f89;
+  font-size: clamp(14px, 2vw, 18px);
+}
+
+.flower-heading .description {
+  margin-top: 8px;
+  color: #a497a0;
+  font-size: 13px;
+}
+
+/* FLOWER / WRAP GRID */
+
+.flowers-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.flower-card-animation {
+  width: 100%;
+  animation: flowerCardAppear 0.45s ease both;
+}
+
+@keyframes flowerCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flower-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 10px;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border 0.25s ease;
+  box-shadow: 0 7px 20px rgba(110, 70, 90, 0.08);
+  border: 2px solid transparent;
+}
+
+.flower-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(110, 70, 90, 0.13);
+}
+
+.flower-card.selected {
+  border-color: #eb5d97;
+  box-shadow: 0 10px 25px rgba(235, 93, 151, 0.18);
+}
+
+.flower-card img {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: contain;
+}
+
+.flower-card h2 {
+  margin: 8px 0 5px;
+  text-align: center;
+  color: #4f4650;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* SELECTED CHECK */
+
+.card-selected,
+.flower-selected {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 5;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: #ed4f91;
+  color: white;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  box-shadow: 0 4px 12px rgba(237, 79, 145, 0.3);
+}
+
+/* WRAP IMAGE */
+
+.wrap-image {
+  width: 100%;
+  height: 330px;
+  object-fit: contain;
+}
+
+/* BOTTOM */
+
+.next-section {
+  width: 100%;
+  margin-top: 35px;
+  text-align: center;
+}
+
+.total-flowers {
+  margin: 0 0 15px;
+  color: #a04d73;
+  font-size: 14px;
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.back-button,
+.next-button {
+  min-width: 110px;
+  min-height: 42px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.back-button {
+  background: white;
+  color: #756b74;
+  border: 1px solid #edcbd9;
+}
+
+.back-button:hover {
+  background: #fff2f6;
+}
+
+.next-button {
+  background: #df5890;
+  color: white;
+  border: none;
+  box-shadow: 0 6px 16px rgba(223, 88, 144, 0.2);
+}
+
+.next-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.next-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* LOADING */
+
+.loading-message {
+  text-align: center;
+  padding: 50px 20px;
+  color: #9b8792;
+}
+
+/* ERROR */
+
+.error-message {
+  width: min(90%, 500px);
+  margin: 40px auto;
+  padding: 15px;
+  border-radius: 12px;
+  background: #fff0f2;
+  color: #c94d67;
+  text-align: center;
+}
+
+/* ========================= */
+/* TABLET */
+/* ========================= */
+
+@media (max-width: 900px) {
+  .flower-main {
+    padding: 32px 18px 50px;
+  }
+
+  .flowers-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .flower-card img {
+    height: 170px;
+  }
+}
+
+/* ========================= */
+/* MOBILE / TABLET SMALL */
+/* ========================= */
+
+@media (max-width: 767px) {
+  .flower-main {
+    display: block !important;
+    width: 100%;
+    padding: 25px 10px 40px;
+  }
+
+  .flower-heading {
+    display: block !important;
+    margin-bottom: 22px;
+  }
+
+  .flower-heading h1 {
+    font-size: 30px;
+  }
+
+  .flower-heading p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .flower-heading .description {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .flowers-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .flower-card-animation {
+    display: block !important;
+    width: 100%;
+  }
+
+  .flower-card {
+    display: block !important;
+    width: 100%;
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .flower-card img {
+    width: 100%;
+    height: 135px;
+    object-fit: contain;
+  }
+
+  .flower-card h2 {
+    margin: 5px 0 4px;
+    font-size: 11px;
+  }
+
+  .card-selected,
+  .flower-selected {
+    width: 24px;
+    height: 24px;
+    right: 7px;
+    top: 7px;
+    font-size: 13px;
+  }
+
+  .next-section {
+    margin-top: 25px;
+  }
+
+  .navigation-buttons {
+    gap: 8px;
+  }
+
+  .back-button,
+  .next-button {
+    min-width: 95px;
+    min-height: 38px;
+    padding: 8px 15px;
+    font-size: 12px;
+  }
+}
+
+/* ========================= */
+/* VERY SMALL PHONES */
+/* ========================= */
+
+@media (max-width: 400px) {
+  .flower-main {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .flowers-grid {
+    gap: 7px;
+  }
+
+  .flower-card img {
+    height: 120px;
+  }
+
+  .flower-card h2 {
+    font-size: 10px;
+  }
+}
