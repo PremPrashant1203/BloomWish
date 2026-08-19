@@ -79,16 +79,10 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log("🌷 BloomWish Backend Started");
-  console.log(`🚀 Server: http://localhost:${PORT}`);
-  console.log(
-    `🌸 Flowers: http://localhost:${PORT}/api/flowers`
-  );
-  console.log(
-    `🌿 Wraps: http://localhost:${PORT}/api/wraps`
-  );
-  console.log(
-    `💐 Bouquets: http://localhost:${PORT}/api/bouquets`
-  );
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌸 Flowers: /api/flowers`);
+  console.log(`🌿 Wraps: /api/wraps`);
+  console.log(`💐 Bouquets: /api/bouquets`);
 });
