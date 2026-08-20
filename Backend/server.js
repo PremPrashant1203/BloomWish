@@ -8,31 +8,56 @@ const bouquetRoutes = require("./routes/bouquetRoutes");
 
 const app = express();
 
-
 // ==========================================
 // CORS
 // ==========================================
 
+const allowedOrigins = [
+  // Local development
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:5176",
+  "http://localhost:5177",
+  "http://localhost:5178",
+  "http://localhost:5179",
+  "http://localhost:5180",
+
+  // Deployed frontend
+  "https://bloomwish-frontend.onrender.com",
+];
+
 app.use(
   cors({
-    origin: [
-      // Local development
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "http://localhost:5176",
-      "http://localhost:5177",
-      "http://localhost:5178",
-      "http://localhost:5179",
-      "http://localhost:5180",
+    origin: function (origin, callback) {
+      // Allow requests without an Origin
+      // (Postman, direct browser requests, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
 
-      // Deployed frontend
-      "https://bloomwish-frontend.onrender.com",
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+
     credentials: true,
+
+    optionsSuccessStatus: 204,
   })
 );
+
+// Explicitly handle preflight requests
+app.options("*", cors());
 
 
 // ==========================================
