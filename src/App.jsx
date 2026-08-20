@@ -10,13 +10,18 @@ import SharedBouquet from "./pages/SharedBouquet";
 
 import "./App.css";
 
+// ==========================================
+// STORAGE KEY
+// ==========================================
+
 const STORAGE_KEY = "bloomwish_app_state";
 
 // ==========================================
 // BACKEND URL
 // ==========================================
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL =
+  "https://bloomwish-api.onrender.com";
 
 // ==========================================
 // DEFAULT BOUQUET DATA
@@ -31,34 +36,111 @@ const defaultBouquetData = {
 };
 
 // ==========================================
-// GET SHARED BOUQUET ID FROM URL
-// Example:
-// /bouquet/mt1l5kx4-9p8aoo
+// GET SHARE ID FROM URL
 // ==========================================
 
-const getSharedBouquetId = () => {
-  const pathname = window.location.pathname;
+const getShareIdFromUrl = () => {
+  const path = window.location.pathname;
 
-  if (!pathname.startsWith("/bouquet/")) {
-    return null;
-  }
+  const match = path.match(
+    /^\/bouquet\/([^/]+)\/?$/
+  );
 
-  const shareId = pathname
-    .replace("/bouquet/", "")
-    .split("/")[0];
-
-  return shareId || null;
+  return match ? match[1] : null;
 };
+
+// ==========================================
+// APP
+// ==========================================
 
 function App() {
   // ==========================================
   // CHECK SHARED BOUQUET URL
   // ==========================================
 
-  const sharedBouquetId = getSharedBouquetId();
+  const [shareId] = useState(() =>
+    getShareIdFromUrl()
+  );
+
+  const [sharedBouquet, setSharedBouquet] =
+    useState(null);
+
+  const [sharedLoading, setSharedLoading] =
+    useState(Boolean(shareId));
+
+  const [sharedError, setSharedError] =
+    useState(false);
 
   // ==========================================
-  // RESTORE STATE AFTER REFRESH
+  // FETCH SHARED BOUQUET
+  // ==========================================
+
+  useEffect(() => {
+    if (!shareId) {
+      return;
+    }
+
+    const fetchSharedBouquet = async () => {
+      try {
+        setSharedLoading(true);
+        setSharedError(false);
+
+        const response = await fetch(
+          `${BACKEND_URL}/api/bouquets/shared/${shareId}`
+        );
+
+        const data = await response.json();
+
+        console.log(
+          "Shared Bouquet Response:",
+          data
+        );
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message ||
+              "Shared bouquet not found"
+          );
+        }
+
+        setSharedBouquet(data.bouquet);
+      } catch (error) {
+        console.error(
+          "Shared Bouquet Error:",
+          error
+        );
+
+        setSharedBouquet(null);
+        setSharedError(true);
+      } finally {
+        setSharedLoading(false);
+      }
+    };
+
+    fetchSharedBouquet();
+  }, [shareId]);
+
+  // ==========================================
+  // SHARED BOUQUET FLOW
+  // ==========================================
+
+  // IMPORTANT:
+  // If URL is /bouquet/:shareId,
+  // NEVER show FlowerSelection.
+
+  if (shareId) {
+    return (
+      <SharedBouquet
+        shareId={shareId}
+        sharedBouquet={sharedBouquet}
+        loading={sharedLoading}
+        error={sharedError}
+      />
+    );
+  }
+
+  // ==========================================
+  // NORMAL BLOOMWISH FLOW
   // ==========================================
 
   const [appState, setAppState] = useState(() => {
@@ -67,7 +149,8 @@ function App() {
         localStorage.getItem(STORAGE_KEY);
 
       if (savedState) {
-        const parsedState = JSON.parse(savedState);
+        const parsedState =
+          JSON.parse(savedState);
 
         return {
           currentStep:
@@ -88,7 +171,10 @@ function App() {
 
     return {
       currentStep: 1,
-      bouquetData: defaultBouquetData,
+
+      bouquetData: {
+        ...defaultBouquetData,
+      },
     };
   });
 
@@ -116,7 +202,7 @@ function App() {
   }, [appState]);
 
   // ==========================================
-  // SCROLL TO TOP WHEN STEP CHANGES
+  // SCROLL TO TOP
   // ==========================================
 
   useEffect(() => {
@@ -265,9 +351,9 @@ function App() {
 
     setAppState({
       currentStep: 1,
+
       bouquetData: {
         ...defaultBouquetData,
-        flowers: [],
       },
     });
 
@@ -279,29 +365,7 @@ function App() {
   };
 
   // ==========================================
-  // SHARED BOUQUET PAGE
-  // ==========================================
-  //
-  // If URL is:
-  //
-  // /bouquet/mt1l5kx4-9p8aoo
-  //
-  // then show SharedBouquet instead of
-  // FlowerSelection.
-  //
-  // ==========================================
-
-  if (sharedBouquetId) {
-    return (
-      <SharedBouquet
-        shareId={sharedBouquetId}
-        backendUrl={BACKEND_URL}
-      />
-    );
-  }
-
-  // ==========================================
-  // STEP 1
+  // STEP 1 — FLOWERS
   // ==========================================
 
   if (currentStep === 1) {
@@ -314,13 +378,15 @@ function App() {
   }
 
   // ==========================================
-  // STEP 2
+  // STEP 2 — WRAP
   // ==========================================
 
   if (currentStep === 2) {
     return (
       <BouquetWrapSelection
-        selectedFlowers={bouquetData.flowers}
+        selectedFlowers={
+          bouquetData.flowers
+        }
         onNext={handleWrapNext}
         onBack={handleBack}
         currentStep={2}
@@ -329,13 +395,15 @@ function App() {
   }
 
   // ==========================================
-  // STEP 3
+  // STEP 3 — CARD
   // ==========================================
 
   if (currentStep === 3) {
     return (
       <CardSelection
-        selectedFlowers={bouquetData.flowers}
+        selectedFlowers={
+          bouquetData.flowers
+        }
         selectedWrap={bouquetData.wrap}
         onNext={handleCardNext}
         onBack={handleBack}
@@ -345,13 +413,15 @@ function App() {
   }
 
   // ==========================================
-  // STEP 4
+  // STEP 4 — MESSAGE
   // ==========================================
 
   if (currentStep === 4) {
     return (
       <Message
-        selectedFlowers={bouquetData.flowers}
+        selectedFlowers={
+          bouquetData.flowers
+        }
         selectedWrap={bouquetData.wrap}
         selectedCard={bouquetData.card}
         onNext={handleMessageNext}
@@ -362,13 +432,15 @@ function App() {
   }
 
   // ==========================================
-  // STEP 5
+  // STEP 5 — THEME
   // ==========================================
 
   if (currentStep === 5) {
     return (
       <ThemeSelection
-        selectedFlowers={bouquetData.flowers}
+        selectedFlowers={
+          bouquetData.flowers
+        }
         selectedWrap={bouquetData.wrap}
         selectedCard={bouquetData.card}
         message={bouquetData.message}
@@ -380,7 +452,7 @@ function App() {
   }
 
   // ==========================================
-  // STEP 6
+  // STEP 6 — PREVIEW
   // ==========================================
 
   if (currentStep === 6) {
