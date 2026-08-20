@@ -8,6 +8,7 @@ const bouquetRoutes = require("./routes/bouquetRoutes");
 
 const app = express();
 
+
 // ==========================================
 // CORS
 // ==========================================
@@ -30,8 +31,8 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests without an Origin
-      // (Postman, direct browser requests, etc.)
+      // Allow requests without an origin
+      // (Postman, server-to-server, etc.)
       if (!origin) {
         return callback(null, true);
       }
@@ -43,7 +44,7 @@ app.use(
       return callback(new Error("Not allowed by CORS"));
     },
 
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 
     allowedHeaders: [
       "Content-Type",
@@ -51,13 +52,8 @@ app.use(
     ],
 
     credentials: true,
-
-    optionsSuccessStatus: 204,
   })
 );
-
-// Explicitly handle preflight requests
-app.options("*", cors());
 
 
 // ==========================================
@@ -68,7 +64,19 @@ app.use(express.json());
 
 
 // ==========================================
-// ROUTES
+// HEALTH CHECK
+// ==========================================
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "BloomWish Backend is running 🌷",
+  });
+});
+
+
+// ==========================================
+// API ROUTES
 // ==========================================
 
 app.use("/api/flowers", flowerRoutes);
@@ -79,25 +87,35 @@ app.use("/api/bouquets", bouquetRoutes);
 
 
 // ==========================================
-// HEALTH CHECK
-// ==========================================
-
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "BloomWish Backend is running 🌷",
-  });
-});
-
-
-// ==========================================
-// 404
+// 404 HANDLER
 // ==========================================
 
 app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
+    path: req.originalUrl,
+  });
+});
+
+
+// ==========================================
+// ERROR HANDLER
+// ==========================================
+
+app.use((err, req, res, next) => {
+  console.error("❌ Server Error:", err.message);
+
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({
+      success: false,
+      message: "CORS policy blocked this request",
+    });
+  }
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
   });
 });
 
