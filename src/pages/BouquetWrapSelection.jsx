@@ -7,6 +7,8 @@ import softPink from "../assets/Wrap/Soft-pink-WR002.png";
 import lavender from "../assets/Wrap/Lavender-WR003.png";
 import kraftNatural from "../assets/Wrap/Kraft Natural-WR004.png";
 
+const API_BASE_URL = "https://bloomwish.onrender.com";
+
 const wrapImages = {
   WR001: classicWhite,
   WR002: softPink,
@@ -31,7 +33,7 @@ function BouquetWrapSelection({
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/wraps"
+        `${API_BASE_URL}/api/wraps`
       );
 
       if (!response.ok) {
