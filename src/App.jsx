@@ -6,16 +6,17 @@ import CardSelection from "./pages/CardSelection";
 import Message from "./pages/Message";
 import ThemeSelection from "./pages/ThemeSelection";
 import BouquetPreview from "./pages/BouquetPreview";
-import SharedBouquet from "./pages/SharedBouquet";
+
+// USER 2
+import ReceiverPage from "./Receiver/pages/ReceiverPage";
 
 import "./App.css";
 
 // ==========================================
-// BACKEND URL
+// BACKEND
 // ==========================================
 
-const BACKEND_URL =
-  "https://bloomwish.onrender.com";
+const BACKEND_URL = "https://bloomwish.onrender.com";
 
 // ==========================================
 // DEFAULT BOUQUET DATA
@@ -34,11 +35,9 @@ const defaultBouquetData = {
 // ==========================================
 
 const getShareIdFromUrl = () => {
-  const path = window.location.pathname;
+  const pathname = window.location.pathname;
 
-  const match = path.match(
-    /^\/bouquet\/([^/]+)\/?$/
-  );
+  const match = pathname.match(/^\/bouquet\/([^/]+)\/?$/);
 
   return match ? match[1] : null;
 };
@@ -49,33 +48,25 @@ const getShareIdFromUrl = () => {
 
 function App() {
   // ==========================================
-  // CHECK SHARED BOUQUET URL
+  // CHECK USER 2 URL
   // ==========================================
 
-  const [shareId] = useState(() =>
-    getShareIdFromUrl()
+  const [shareId] = useState(() => getShareIdFromUrl());
+
+  // ==========================================
+  // USER 2 SHARED BOUQUET
+  // ==========================================
+
+  const [sharedBouquet, setSharedBouquet] = useState(null);
+
+  const [sharedLoading, setSharedLoading] = useState(
+    Boolean(shareId)
   );
 
-  // ==========================================
-  // SHARED BOUQUET STATE
-  // ==========================================
-
-  const [sharedBouquet, setSharedBouquet] =
-    useState(null);
-
-  const [sharedLoading, setSharedLoading] =
-    useState(Boolean(shareId));
-
-  const [sharedError, setSharedError] =
-    useState(false);
+  const [sharedError, setSharedError] = useState(false);
 
   // ==========================================
-  // NORMAL BLOOMWISH STATE
-  //
-  // IMPORTANT:
-  // Main URL "/" ALWAYS starts from Step 1.
-  // We do NOT restore an old currentStep
-  // from localStorage.
+  // USER 1 STATE
   // ==========================================
 
   const [appState, setAppState] = useState({
@@ -86,8 +77,14 @@ function App() {
     },
   });
 
+  const {
+    currentStep,
+    bouquetData,
+  } = appState;
+
   // ==========================================
-  // FETCH SHARED BOUQUET
+  // USER 2
+  // FETCH BOUQUET CREATED BY USER 1
   // ==========================================
 
   useEffect(() => {
@@ -106,22 +103,20 @@ function App() {
 
         const data = await response.json();
 
-        console.log(
-          "Shared Bouquet Response:",
-          data
-        );
+        console.log("USER 2 SHARED BOUQUET:", data);
 
         if (!response.ok || !data.success) {
           throw new Error(
-            data.message ||
-              "Shared bouquet not found"
+            data.message || "Shared bouquet not found"
           );
         }
 
+        // IMPORTANT:
+        // This is the EXACT bouquet created by USER 1.
         setSharedBouquet(data.bouquet);
       } catch (error) {
         console.error(
-          "Shared Bouquet Error:",
+          "USER 2 BOUQUET ERROR:",
           error
         );
 
@@ -136,7 +131,7 @@ function App() {
   }, [shareId]);
 
   // ==========================================
-  // SCROLL TO TOP
+  // SCROLL TOP
   // ==========================================
 
   useEffect(() => {
@@ -145,20 +140,19 @@ function App() {
       left: 0,
       behavior: "instant",
     });
-  }, [appState.currentStep]);
+  }, [currentStep]);
 
   // ==========================================
-  // SHARED BOUQUET FLOW
+  // USER 2
   //
   // /bouquet/:shareId
-  // = USER 2
   //
-  // NEVER show creation flow here.
+  // NEVER SHOW USER 1 CREATION FLOW HERE
   // ==========================================
 
   if (shareId) {
     return (
-      <SharedBouquet
+      <ReceiverPage
         shareId={shareId}
         sharedBouquet={sharedBouquet}
         loading={sharedLoading}
@@ -167,21 +161,16 @@ function App() {
     );
   }
 
-  // ==========================================
-  // NORMAL BLOOMWISH FLOW
+  // =========================================================
+  // FROM HERE → USER 1 ONLY
   //
   // /
-  // /?utm_source=chatgpt.com
   //
-  // Both are USER 1 creation flow.
-  // ==========================================
-
-  const {
-    currentStep,
-    bouquetData,
-  } = appState;
+  // Flower → Wrap → Card → Message → Theme → Preview → Link
+  // =========================================================
 
   // ==========================================
+  // STEP 1 → STEP 2
   // FLOWERS → WRAP
   // ==========================================
 
@@ -204,6 +193,7 @@ function App() {
   };
 
   // ==========================================
+  // STEP 2 → STEP 3
   // WRAP → CARD
   // ==========================================
 
@@ -230,6 +220,7 @@ function App() {
   };
 
   // ==========================================
+  // STEP 3 → STEP 4
   // CARD → MESSAGE
   // ==========================================
 
@@ -252,6 +243,7 @@ function App() {
   };
 
   // ==========================================
+  // STEP 4 → STEP 5
   // MESSAGE → THEME
   // ==========================================
 
@@ -262,6 +254,7 @@ function App() {
       bouquetData: {
         ...previous.bouquetData,
 
+        // EXACT USER 1 MESSAGE
         message:
           data?.message ||
           data?.selectedMessage ||
@@ -274,6 +267,7 @@ function App() {
   };
 
   // ==========================================
+  // STEP 5 → STEP 6
   // THEME → PREVIEW
   // ==========================================
 
@@ -311,7 +305,7 @@ function App() {
   };
 
   // ==========================================
-  // RESET BLOOMWISH
+  // RESET
   // ==========================================
 
   const handleReset = () => {
@@ -322,16 +316,11 @@ function App() {
         ...defaultBouquetData,
       },
     });
-
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant",
-    });
   };
 
   // ==========================================
-  // STEP 1 — FLOWER SELECTION
+  // USER 1 — STEP 1
+  // FLOWER SELECTION
   // ==========================================
 
   if (currentStep === 1) {
@@ -344,7 +333,8 @@ function App() {
   }
 
   // ==========================================
-  // STEP 2 — WRAP SELECTION
+  // USER 1 — STEP 2
+  // WRAP SELECTION
   // ==========================================
 
   if (currentStep === 2) {
@@ -361,7 +351,8 @@ function App() {
   }
 
   // ==========================================
-  // STEP 3 — CARD SELECTION
+  // USER 1 — STEP 3
+  // CARD SELECTION
   // ==========================================
 
   if (currentStep === 3) {
@@ -379,7 +370,8 @@ function App() {
   }
 
   // ==========================================
-  // STEP 4 — MESSAGE
+  // USER 1 — STEP 4
+  // MESSAGE
   // ==========================================
 
   if (currentStep === 4) {
@@ -398,7 +390,8 @@ function App() {
   }
 
   // ==========================================
-  // STEP 5 — THEME
+  // USER 1 — STEP 5
+  // THEME
   // ==========================================
 
   if (currentStep === 5) {
@@ -418,7 +411,8 @@ function App() {
   }
 
   // ==========================================
-  // STEP 6 — PREVIEW
+  // USER 1 — STEP 6
+  // PREVIEW
   // ==========================================
 
   if (currentStep === 6) {
@@ -430,10 +424,6 @@ function App() {
       />
     );
   }
-
-  // ==========================================
-  // FALLBACK
-  // ==========================================
 
   return null;
 }
