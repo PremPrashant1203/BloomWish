@@ -1,3 +1,38 @@
+// ==========================================
+// BOUQUET IMAGE ASSETS
+// ==========================================
+
+const bouquetImages = import.meta.glob(
+  "/src/**/*.{png,jpg,jpeg,webp}",
+  {
+    eager: true,
+    query: "?url",
+    import: "default",
+  }
+);
+
+// ==========================================
+// FIND IMAGE BY FILE NAME
+// ==========================================
+
+const findBouquetImage = (imageName) => {
+  if (!imageName) {
+    return null;
+  }
+
+  const fileName = imageName.split("/").pop();
+
+  const match = Object.entries(bouquetImages).find(
+    ([path]) => path.split("/").pop() === fileName
+  );
+
+  return match ? match[1] : null;
+};
+
+// ==========================================
+// BOUQUET DISPLAY
+// ==========================================
+
 const BouquetDisplay = ({ bouquet }) => {
   if (!bouquet) {
     return null;
@@ -5,22 +40,25 @@ const BouquetDisplay = ({ bouquet }) => {
 
   // ==========================================
   // BOUQUET IMAGE
-  // Backend me field ka naam alag ho sakta hai
+  // Backend:
+  // bouquetImage: "BW-WR001-001.png"
   // ==========================================
 
   const bouquetImage =
-    bouquet.bouquetImage ||
-    bouquet.image ||
-    bouquet.imageUrl ||
-    bouquet.bouquet?.image ||
-    bouquet.bouquet?.imageUrl ||
-    null;
+    findBouquetImage(
+      bouquet.bouquetImage ||
+        bouquet.image ||
+        bouquet.imageUrl ||
+        bouquet.bouquet?.image ||
+        bouquet.bouquet?.imageUrl
+    );
 
   // ==========================================
   // CARD DATA
   // ==========================================
 
   const card =
+    bouquet.card &&
     typeof bouquet.card === "object"
       ? bouquet.card
       : null;
@@ -30,6 +68,7 @@ const BouquetDisplay = ({ bouquet }) => {
   // ==========================================
 
   const message =
+    bouquet.message &&
     typeof bouquet.message === "object"
       ? bouquet.message
       : null;
@@ -49,37 +88,27 @@ const BouquetDisplay = ({ bouquet }) => {
     message?.senderName || "";
 
   // ==========================================
-  // CARD BACKGROUND
+  // CARD STYLE
   // ==========================================
 
   const cardBackground =
     card?.background ||
     "linear-gradient(145deg, #302d43, #1f1d31)";
 
-  // ==========================================
-  // CARD TEXT COLOR
-  // ==========================================
-
   const cardTextColor =
     card?.textColor || "#e6c477";
-
-  // ==========================================
-  // CARD BORDER COLOR
-  // ==========================================
 
   const cardBorderColor =
     card?.borderColor || "#514b61";
 
   return (
-    <div
-      className="w-full flex flex-col items-center"
-    >
+    <div className="w-full flex flex-col items-center">
 
       {/* ==========================================
-          REAL BOUQUET
+          REAL USER 1 BOUQUET
       ========================================== */}
 
-      {bouquetImage && (
+      {bouquetImage ? (
         <div className="w-full flex justify-center">
           <img
             src={bouquetImage}
@@ -93,10 +122,16 @@ const BouquetDisplay = ({ bouquet }) => {
             "
           />
         </div>
+      ) : (
+        <div className="text-center py-10">
+          <p className="text-sm opacity-60">
+            Bouquet image unavailable
+          </p>
+        </div>
       )}
 
       {/* ==========================================
-          CARD
+          USER 1 CARD
       ========================================== */}
 
       {card && (
@@ -121,9 +156,7 @@ const BouquetDisplay = ({ bouquet }) => {
             }}
           >
 
-            {/* ======================================
-                CARD HEADER
-            ====================================== */}
+            {/* CARD HEADER */}
 
             <div className="text-center">
 
@@ -154,7 +187,7 @@ const BouquetDisplay = ({ bouquet }) => {
             </div>
 
             {/* ======================================
-                MESSAGE ON CARD
+                EXACT USER 1 MESSAGE
             ====================================== */}
 
             <div className="text-center py-8">
@@ -179,9 +212,7 @@ const BouquetDisplay = ({ bouquet }) => {
 
             </div>
 
-            {/* ======================================
-                SENDER
-            ====================================== */}
+            {/* SENDER */}
 
             {senderName && (
               <div className="text-right">
@@ -198,13 +229,12 @@ const BouquetDisplay = ({ bouquet }) => {
             )}
 
           </div>
-
         </div>
       )}
 
       {/* ==========================================
           FALLBACK MESSAGE
-          Agar card nahi hai lekin message hai
+          ONLY IF CARD DOES NOT EXIST
       ========================================== */}
 
       {!card && messageText && (
@@ -242,7 +272,6 @@ const BouquetDisplay = ({ bouquet }) => {
             )}
 
           </div>
-
         </div>
       )}
 
