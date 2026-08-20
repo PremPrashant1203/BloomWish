@@ -7,16 +7,13 @@ import Message from "./pages/Message";
 import ThemeSelection from "./pages/ThemeSelection";
 import BouquetPreview from "./pages/BouquetPreview";
 
-// USER 2
-import ReceiverPage from "./Receiver/pages/ReceiverPage";
+// ==========================================
+// USER 2 / RECEIVER
+// ==========================================
+
+import ReciverPage from "./Reciver/pages/ReciverPage";
 
 import "./App.css";
-
-// ==========================================
-// BACKEND
-// ==========================================
-
-const BACKEND_URL = "https://bloomwish.onrender.com";
 
 // ==========================================
 // DEFAULT BOUQUET DATA
@@ -37,7 +34,9 @@ const defaultBouquetData = {
 const getShareIdFromUrl = () => {
   const pathname = window.location.pathname;
 
-  const match = pathname.match(/^\/bouquet\/([^/]+)\/?$/);
+  const match = pathname.match(
+    /^\/bouquet\/([^/]+)\/?$/
+  );
 
   return match ? match[1] : null;
 };
@@ -48,22 +47,12 @@ const getShareIdFromUrl = () => {
 
 function App() {
   // ==========================================
-  // CHECK USER 2 URL
+  // CHECK IF THIS IS USER 2
   // ==========================================
 
-  const [shareId] = useState(() => getShareIdFromUrl());
-
-  // ==========================================
-  // USER 2 SHARED BOUQUET
-  // ==========================================
-
-  const [sharedBouquet, setSharedBouquet] = useState(null);
-
-  const [sharedLoading, setSharedLoading] = useState(
-    Boolean(shareId)
+  const [shareId] = useState(() =>
+    getShareIdFromUrl()
   );
-
-  const [sharedError, setSharedError] = useState(false);
 
   // ==========================================
   // USER 1 STATE
@@ -83,54 +72,6 @@ function App() {
   } = appState;
 
   // ==========================================
-  // USER 2
-  // FETCH BOUQUET CREATED BY USER 1
-  // ==========================================
-
-  useEffect(() => {
-    if (!shareId) {
-      return;
-    }
-
-    const fetchSharedBouquet = async () => {
-      try {
-        setSharedLoading(true);
-        setSharedError(false);
-
-        const response = await fetch(
-          `${BACKEND_URL}/api/bouquets/shared/${shareId}`
-        );
-
-        const data = await response.json();
-
-        console.log("USER 2 SHARED BOUQUET:", data);
-
-        if (!response.ok || !data.success) {
-          throw new Error(
-            data.message || "Shared bouquet not found"
-          );
-        }
-
-        // IMPORTANT:
-        // This is the EXACT bouquet created by USER 1.
-        setSharedBouquet(data.bouquet);
-      } catch (error) {
-        console.error(
-          "USER 2 BOUQUET ERROR:",
-          error
-        );
-
-        setSharedBouquet(null);
-        setSharedError(true);
-      } finally {
-        setSharedLoading(false);
-      }
-    };
-
-    fetchSharedBouquet();
-  }, [shareId]);
-
-  // ==========================================
   // SCROLL TOP
   // ==========================================
 
@@ -147,26 +88,36 @@ function App() {
   //
   // /bouquet/:shareId
   //
-  // NEVER SHOW USER 1 CREATION FLOW HERE
+  // IMPORTANT:
+  // USER 2 NEVER ENTERS USER 1 FLOW
   // ==========================================
 
   if (shareId) {
     return (
-      <ReceiverPage
+      <ReciverPage
         shareId={shareId}
-        sharedBouquet={sharedBouquet}
-        loading={sharedLoading}
-        error={sharedError}
       />
     );
   }
 
   // =========================================================
-  // FROM HERE → USER 1 ONLY
+  // USER 1 FLOW
   //
   // /
   //
-  // Flower → Wrap → Card → Message → Theme → Preview → Link
+  // Flower
+  // ↓
+  // Wrap
+  // ↓
+  // Card
+  // ↓
+  // Message
+  // ↓
+  // Theme
+  // ↓
+  // Preview
+  // ↓
+  // Generate Link
   // =========================================================
 
   // ==========================================
@@ -254,7 +205,7 @@ function App() {
       bouquetData: {
         ...previous.bouquetData,
 
-        // EXACT USER 1 MESSAGE
+        // EXACT MESSAGE WRITTEN BY USER 1
         message:
           data?.message ||
           data?.selectedMessage ||
@@ -361,7 +312,9 @@ function App() {
         selectedFlowers={
           bouquetData.flowers
         }
-        selectedWrap={bouquetData.wrap}
+        selectedWrap={
+          bouquetData.wrap
+        }
         onNext={handleCardNext}
         onBack={handleBack}
         currentStep={3}
@@ -380,8 +333,12 @@ function App() {
         selectedFlowers={
           bouquetData.flowers
         }
-        selectedWrap={bouquetData.wrap}
-        selectedCard={bouquetData.card}
+        selectedWrap={
+          bouquetData.wrap
+        }
+        selectedCard={
+          bouquetData.card
+        }
         onNext={handleMessageNext}
         onBack={handleBack}
         currentStep={4}
@@ -400,9 +357,15 @@ function App() {
         selectedFlowers={
           bouquetData.flowers
         }
-        selectedWrap={bouquetData.wrap}
-        selectedCard={bouquetData.card}
-        message={bouquetData.message}
+        selectedWrap={
+          bouquetData.wrap
+        }
+        selectedCard={
+          bouquetData.card
+        }
+        message={
+          bouquetData.message
+        }
         onNext={handleThemeNext}
         onBack={handleBack}
         currentStep={5}

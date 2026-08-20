@@ -1,29 +1,77 @@
 const BouquetDisplay = ({ bouquet }) => {
-  if (!bouquet) return null;
+  if (!bouquet) {
+    return null;
+  }
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="w-full flex flex-col items-center">
 
-      {/* Actual Bouquet */}
+      {/* ==========================================
+          ACTUAL BOUQUET
+      ========================================== */}
+
       {bouquet.bouquetImage && (
-        <img
-          src={bouquet.bouquetImage}
-          alt="Your BloomWish bouquet"
-          className="max-w-[420px] w-full object-contain"
-        />
+        <div className="w-full flex justify-center">
+          <img
+            src={bouquet.bouquetImage}
+            alt="BloomWish bouquet"
+            className="w-full max-w-[500px] object-contain rounded-2xl"
+          />
+        </div>
       )}
 
-      {/* Message */}
-      {bouquet.message && (
-        <div className="mt-6 w-full max-w-[420px]">
-          <div className="bg-white/70 rounded-2xl p-6 shadow-sm">
+      {/* ==========================================
+          CARD
+      ========================================== */}
 
-            <p className="text-xs opacity-60 mb-3">
-              Your special message
+      {bouquet.card && (
+        <div className="w-full max-w-[500px] mt-8">
+          <div className="rounded-2xl bg-white/80 p-6 shadow-sm">
+
+            <p className="text-sm opacity-60 mb-2">
+              Your card
+            </p>
+
+            {typeof bouquet.card === "string" ? (
+              <p className="text-lg">
+                {bouquet.card}
+              </p>
+            ) : (
+              <pre className="whitespace-pre-wrap text-sm">
+                {JSON.stringify(
+                  bouquet.card,
+                  null,
+                  2
+                )}
+              </pre>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          EXACT MESSAGE FROM USER 1
+      ========================================== */}
+
+      {bouquet.message && (
+        <div className="w-full max-w-[500px] mt-6">
+          <div className="rounded-2xl bg-white/80 p-6 shadow-sm">
+
+            <p className="text-sm opacity-60 mb-2">
+              A message for you
             </p>
 
             <p className="text-lg leading-relaxed whitespace-pre-wrap">
-              {bouquet.message}
+              {typeof bouquet.message === "string"
+                ? bouquet.message
+                : bouquet.message?.text ||
+                  bouquet.message?.message ||
+                  JSON.stringify(
+                    bouquet.message,
+                    null,
+                    2
+                  )}
             </p>
 
           </div>
