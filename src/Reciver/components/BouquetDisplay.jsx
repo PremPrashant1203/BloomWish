@@ -1,57 +1,12 @@
 // ==========================================
-// BOUQUET IMAGE ASSETS
-// ==========================================
-
-const bouquetImages = import.meta.glob(
-  "/src/**/*.{png,jpg,jpeg,webp}",
-  {
-    eager: true,
-    query: "?url",
-    import: "default",
-  }
-);
-
-// ==========================================
-// FIND IMAGE BY FILE NAME
-// ==========================================
-
-const findBouquetImage = (imageName) => {
-  if (!imageName) {
-    return null;
-  }
-
-  const fileName = imageName.split("/").pop();
-
-  const match = Object.entries(bouquetImages).find(
-    ([path]) => path.split("/").pop() === fileName
-  );
-
-  return match ? match[1] : null;
-};
-
-// ==========================================
 // BOUQUET DISPLAY
+// USER 2 — CARD ONLY
 // ==========================================
 
 const BouquetDisplay = ({ bouquet }) => {
   if (!bouquet) {
     return null;
   }
-
-  // ==========================================
-  // BOUQUET IMAGE
-  // Backend:
-  // bouquetImage: "BW-WR001-001.png"
-  // ==========================================
-
-  const bouquetImage =
-    findBouquetImage(
-      bouquet.bouquetImage ||
-        bouquet.image ||
-        bouquet.imageUrl ||
-        bouquet.bouquet?.image ||
-        bouquet.bouquet?.imageUrl
-    );
 
   // ==========================================
   // CARD DATA
@@ -63,15 +18,24 @@ const BouquetDisplay = ({ bouquet }) => {
       ? bouquet.card
       : null;
 
+  // Agar card nahi hai to kuch render nahi hoga
+  if (!card) {
+    return null;
+  }
+
   // ==========================================
   // MESSAGE DATA
+  // EXACT USER 1 MESSAGE
   // ==========================================
 
   const message =
     bouquet.message &&
     typeof bouquet.message === "object"
       ? bouquet.message
-      : null;
+      : {};
+
+  const recipientName =
+    message?.recipientName || "";
 
   const messageText =
     typeof bouquet.message === "string"
@@ -81,14 +45,12 @@ const BouquetDisplay = ({ bouquet }) => {
         message?.message ||
         "";
 
-  const recipientName =
-    message?.recipientName || "";
-
   const senderName =
     message?.senderName || "";
 
   // ==========================================
   // CARD STYLE
+  // SAME STYLE DATA USER 1 SELECTED
   // ==========================================
 
   const cardBackground =
@@ -96,184 +58,139 @@ const BouquetDisplay = ({ bouquet }) => {
     "linear-gradient(145deg, #302d43, #1f1d31)";
 
   const cardTextColor =
-    card?.textColor || "#e6c477";
+    card?.textColor ||
+    "#e6c477";
 
   const cardBorderColor =
-    card?.borderColor || "#514b61";
+    card?.borderColor ||
+    "#514b61";
+
+  // ==========================================
+  // CARD
+  // ==========================================
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full flex justify-center">
 
-      {/* ==========================================
-          REAL USER 1 BOUQUET
-      ========================================== */}
+      <div className="w-full max-w-[500px]">
 
-      {bouquetImage ? (
-        <div className="w-full flex justify-center">
-          <img
-            src={bouquetImage}
-            alt="Your BloomWish bouquet"
-            className="
-              w-full
-              max-w-[650px]
-              max-h-[650px]
-              object-contain
-              rounded-2xl
-            "
-          />
-        </div>
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-sm opacity-60">
-            Bouquet image unavailable
-          </p>
-        </div>
-      )}
+        <div
+          className="
+            relative
+            w-full
+            min-h-[355px]
+            rounded-2xl
+            p-8
+            shadow-xl
+            overflow-hidden
+            flex
+            flex-col
+            justify-between
+          "
+          style={{
+            background: cardBackground,
+            color: cardTextColor,
+            border: `1px solid ${cardBorderColor}`,
+          }}
+        >
 
-      {/* ==========================================
-          USER 1 CARD
-      ========================================== */}
+          {/* ======================================
+              CARD TITLE
+          ====================================== */}
 
-      {card && (
-        <div className="w-full max-w-[500px] mt-8">
+          <div className="text-center">
 
-          <div
-            className="
-              relative
-              rounded-2xl
-              p-8
-              min-h-[320px]
-              shadow-xl
-              overflow-hidden
-              flex
-              flex-col
-              justify-between
-            "
-            style={{
-              background: cardBackground,
-              color: cardTextColor,
-              border: `1px solid ${cardBorderColor}`,
-            }}
-          >
+            {card.name && (
+              <p
+                className="
+                  text-xl
+                  font-semibold
+                  tracking-wide
+                "
+              >
+                {card.name}
+              </p>
+            )}
 
-            {/* CARD HEADER */}
-
-            <div className="text-center">
-
-              {card.name && (
-                <p
-                  className="
-                    text-xl
-                    font-semibold
-                    tracking-wide
-                  "
-                >
-                  {card.name}
-                </p>
-              )}
-
-              {card.subtitle && (
-                <p
-                  className="
-                    text-sm
-                    mt-2
-                    opacity-80
-                  "
-                >
-                  {card.subtitle}
-                </p>
-              )}
-
-            </div>
-
-            {/* ======================================
-                EXACT USER 1 MESSAGE
-            ====================================== */}
-
-            <div className="text-center py-8">
-
-              {recipientName && (
-                <p className="text-sm opacity-80 mb-4">
-                  To: {recipientName}
-                </p>
-              )}
-
-              {messageText && (
-                <p
-                  className="
-                    text-lg
-                    leading-relaxed
-                    whitespace-pre-wrap
-                  "
-                >
-                  {messageText}
-                </p>
-              )}
-
-            </div>
-
-            {/* SENDER */}
-
-            {senderName && (
-              <div className="text-right">
-
-                <p className="text-sm opacity-70">
-                  With love,
-                </p>
-
-                <p className="text-lg font-medium">
-                  {senderName}
-                </p>
-
-              </div>
+            {card.subtitle && (
+              <p
+                className="
+                  text-sm
+                  mt-2
+                  opacity-80
+                "
+              >
+                {card.subtitle}
+              </p>
             )}
 
           </div>
-        </div>
-      )}
 
-      {/* ==========================================
-          FALLBACK MESSAGE
-          ONLY IF CARD DOES NOT EXIST
-      ========================================== */}
 
-      {!card && messageText && (
-        <div className="w-full max-w-[500px] mt-8">
+          {/* ======================================
+              MESSAGE
+          ====================================== */}
 
           <div
             className="
-              rounded-2xl
-              bg-white/80
-              p-6
-              shadow-sm
+              flex
+              flex-col
+              items-center
+              justify-center
+              text-center
+              flex-1
+              py-8
             "
           >
 
             {recipientName && (
-              <p className="text-sm opacity-60 mb-3">
+              <p
+                className="
+                  text-sm
+                  opacity-80
+                  mb-5
+                "
+              >
                 To: {recipientName}
               </p>
             )}
 
-            <p
-              className="
-                text-lg
-                leading-relaxed
-                whitespace-pre-wrap
-              "
-            >
-              {messageText}
-            </p>
-
-            {senderName && (
-              <p className="text-right mt-5">
-                With love, {senderName}
+            {messageText && (
+              <p
+                className="
+                  text-lg
+                  leading-relaxed
+                  whitespace-pre-wrap
+                "
+              >
+                {messageText}
               </p>
             )}
 
           </div>
+
+
+          {/* ======================================
+              SENDER
+          ====================================== */}
+
+          {senderName && (
+            <div className="text-right">
+
+              <p className="text-sm opacity-70">
+                With love,
+              </p>
+
+              <p className="text-lg font-medium">
+                {senderName}
+              </p>
+
+            </div>
+          )}
+
         </div>
-      )}
+
+      </div>
 
     </div>
   );
