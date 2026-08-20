@@ -11,17 +11,11 @@ import SharedBouquet from "./pages/SharedBouquet";
 import "./App.css";
 
 // ==========================================
-// STORAGE KEY
-// ==========================================
-
-const STORAGE_KEY = "bloomwish_app_state";
-
-// ==========================================
 // BACKEND URL
 // ==========================================
 
 const BACKEND_URL =
-  "https://bloomwish-api.onrender.com";
+  "https://bloomwish.onrender.com";
 
 // ==========================================
 // DEFAULT BOUQUET DATA
@@ -62,6 +56,10 @@ function App() {
     getShareIdFromUrl()
   );
 
+  // ==========================================
+  // SHARED BOUQUET STATE
+  // ==========================================
+
   const [sharedBouquet, setSharedBouquet] =
     useState(null);
 
@@ -70,6 +68,23 @@ function App() {
 
   const [sharedError, setSharedError] =
     useState(false);
+
+  // ==========================================
+  // NORMAL BLOOMWISH STATE
+  //
+  // IMPORTANT:
+  // Main URL "/" ALWAYS starts from Step 1.
+  // We do NOT restore an old currentStep
+  // from localStorage.
+  // ==========================================
+
+  const [appState, setAppState] = useState({
+    currentStep: 1,
+
+    bouquetData: {
+      ...defaultBouquetData,
+    },
+  });
 
   // ==========================================
   // FETCH SHARED BOUQUET
@@ -121,12 +136,25 @@ function App() {
   }, [shareId]);
 
   // ==========================================
-  // SHARED BOUQUET FLOW
+  // SCROLL TO TOP
   // ==========================================
 
-  // IMPORTANT:
-  // If URL is /bouquet/:shareId,
-  // NEVER show FlowerSelection.
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant",
+    });
+  }, [appState.currentStep]);
+
+  // ==========================================
+  // SHARED BOUQUET FLOW
+  //
+  // /bouquet/:shareId
+  // = USER 2
+  //
+  // NEVER show creation flow here.
+  // ==========================================
 
   if (shareId) {
     return (
@@ -141,77 +169,17 @@ function App() {
 
   // ==========================================
   // NORMAL BLOOMWISH FLOW
+  //
+  // /
+  // /?utm_source=chatgpt.com
+  //
+  // Both are USER 1 creation flow.
   // ==========================================
-
-  const [appState, setAppState] = useState(() => {
-    try {
-      const savedState =
-        localStorage.getItem(STORAGE_KEY);
-
-      if (savedState) {
-        const parsedState =
-          JSON.parse(savedState);
-
-        return {
-          currentStep:
-            parsedState.currentStep || 1,
-
-          bouquetData: {
-            ...defaultBouquetData,
-            ...(parsedState.bouquetData || {}),
-          },
-        };
-      }
-    } catch (error) {
-      console.error(
-        "Unable to restore BloomWish state:",
-        error
-      );
-    }
-
-    return {
-      currentStep: 1,
-
-      bouquetData: {
-        ...defaultBouquetData,
-      },
-    };
-  });
 
   const {
     currentStep,
     bouquetData,
   } = appState;
-
-  // ==========================================
-  // SAVE STATE
-  // ==========================================
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(appState)
-      );
-    } catch (error) {
-      console.error(
-        "Unable to save BloomWish state:",
-        error
-      );
-    }
-  }, [appState]);
-
-  // ==========================================
-  // SCROLL TO TOP
-  // ==========================================
-
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant",
-    });
-  }, [currentStep]);
 
   // ==========================================
   // FLOWERS → WRAP
@@ -347,8 +315,6 @@ function App() {
   // ==========================================
 
   const handleReset = () => {
-    localStorage.removeItem(STORAGE_KEY);
-
     setAppState({
       currentStep: 1,
 
@@ -365,7 +331,7 @@ function App() {
   };
 
   // ==========================================
-  // STEP 1 — FLOWERS
+  // STEP 1 — FLOWER SELECTION
   // ==========================================
 
   if (currentStep === 1) {
@@ -378,7 +344,7 @@ function App() {
   }
 
   // ==========================================
-  // STEP 2 — WRAP
+  // STEP 2 — WRAP SELECTION
   // ==========================================
 
   if (currentStep === 2) {
@@ -395,7 +361,7 @@ function App() {
   }
 
   // ==========================================
-  // STEP 3 — CARD
+  // STEP 3 — CARD SELECTION
   // ==========================================
 
   if (currentStep === 3) {
@@ -464,6 +430,10 @@ function App() {
       />
     );
   }
+
+  // ==========================================
+  // FALLBACK
+  // ==========================================
 
   return null;
 }
