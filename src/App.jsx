@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import FlowerSelection from "./pages/FlowerSelection";
 import BouquetWrapSelection from "./pages/BouquetWrapSelection";
@@ -6,93 +6,303 @@ import CardSelection from "./pages/CardSelection";
 import Message from "./pages/Message";
 import ThemeSelection from "./pages/ThemeSelection";
 import BouquetPreview from "./pages/BouquetPreview";
+import SharedBouquet from "./pages/SharedBouquet";
 
 import "./App.css";
 
-function App() {
-  const [currentStep, setCurrentStep] = useState(1);
+const STORAGE_KEY = "bloomwish_app_state";
 
-  const [bouquetData, setBouquetData] = useState({
-    flowers: [],
-    wrap: null,
-    card: null,
-    message: null,
-    theme: null,
+// ==========================================
+// BACKEND URL
+// ==========================================
+
+const BACKEND_URL = "http://localhost:5000";
+
+// ==========================================
+// DEFAULT BOUQUET DATA
+// ==========================================
+
+const defaultBouquetData = {
+  flowers: [],
+  wrap: null,
+  card: null,
+  message: null,
+  theme: null,
+};
+
+// ==========================================
+// GET SHARED BOUQUET ID FROM URL
+// Example:
+// /bouquet/mt1l5kx4-9p8aoo
+// ==========================================
+
+const getSharedBouquetId = () => {
+  const pathname = window.location.pathname;
+
+  if (!pathname.startsWith("/bouquet/")) {
+    return null;
+  }
+
+  const shareId = pathname
+    .replace("/bouquet/", "")
+    .split("/")[0];
+
+  return shareId || null;
+};
+
+function App() {
+  // ==========================================
+  // CHECK SHARED BOUQUET URL
+  // ==========================================
+
+  const sharedBouquetId = getSharedBouquetId();
+
+  // ==========================================
+  // RESTORE STATE AFTER REFRESH
+  // ==========================================
+
+  const [appState, setAppState] = useState(() => {
+    try {
+      const savedState =
+        localStorage.getItem(STORAGE_KEY);
+
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+
+        return {
+          currentStep:
+            parsedState.currentStep || 1,
+
+          bouquetData: {
+            ...defaultBouquetData,
+            ...(parsedState.bouquetData || {}),
+          },
+        };
+      }
+    } catch (error) {
+      console.error(
+        "Unable to restore BloomWish state:",
+        error
+      );
+    }
+
+    return {
+      currentStep: 1,
+      bouquetData: defaultBouquetData,
+    };
   });
 
-  const handleFlowersNext = (data) => {
-    setBouquetData((previous) => ({
-      ...previous,
-      flowers:
-        data?.flowers ||
-        data?.selectedFlowers ||
-        data ||
-        [],
-    }));
+  const {
+    currentStep,
+    bouquetData,
+  } = appState;
 
-    setCurrentStep(2);
+  // ==========================================
+  // SAVE STATE
+  // ==========================================
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(appState)
+      );
+    } catch (error) {
+      console.error(
+        "Unable to save BloomWish state:",
+        error
+      );
+    }
+  }, [appState]);
+
+  // ==========================================
+  // SCROLL TO TOP WHEN STEP CHANGES
+  // ==========================================
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant",
+    });
+  }, [currentStep]);
+
+  // ==========================================
+  // FLOWERS → WRAP
+  // ==========================================
+
+  const handleFlowersNext = (data) => {
+    setAppState((previous) => ({
+      ...previous,
+
+      bouquetData: {
+        ...previous.bouquetData,
+
+        flowers:
+          data?.flowers ||
+          data?.selectedFlowers ||
+          data ||
+          [],
+      },
+
+      currentStep: 2,
+    }));
   };
+
+  // ==========================================
+  // WRAP → CARD
+  // ==========================================
 
   const handleWrapNext = (data) => {
-    setBouquetData((previous) => ({
+    setAppState((previous) => ({
       ...previous,
-      flowers:
-        data?.flowers ||
-        previous.flowers,
-      wrap:
-        data?.wrap ||
-        data?.selectedWrap ||
-        data ||
-        null,
-    }));
 
-    setCurrentStep(3);
+      bouquetData: {
+        ...previous.bouquetData,
+
+        flowers:
+          data?.flowers ||
+          previous.bouquetData.flowers,
+
+        wrap:
+          data?.wrap ||
+          data?.selectedWrap ||
+          data ||
+          null,
+      },
+
+      currentStep: 3,
+    }));
   };
+
+  // ==========================================
+  // CARD → MESSAGE
+  // ==========================================
 
   const handleCardNext = (data) => {
-    setBouquetData((previous) => ({
+    setAppState((previous) => ({
       ...previous,
-      card:
-        data?.card ||
-        data?.selectedCard ||
-        data ||
-        null,
-    }));
 
-    setCurrentStep(4);
+      bouquetData: {
+        ...previous.bouquetData,
+
+        card:
+          data?.card ||
+          data?.selectedCard ||
+          data ||
+          null,
+      },
+
+      currentStep: 4,
+    }));
   };
+
+  // ==========================================
+  // MESSAGE → THEME
+  // ==========================================
 
   const handleMessageNext = (data) => {
-    setBouquetData((previous) => ({
+    setAppState((previous) => ({
       ...previous,
-      message:
-        data?.message ||
-        data?.selectedMessage ||
-        data ||
-        null,
-    }));
 
-    setCurrentStep(5);
+      bouquetData: {
+        ...previous.bouquetData,
+
+        message:
+          data?.message ||
+          data?.selectedMessage ||
+          data ||
+          null,
+      },
+
+      currentStep: 5,
+    }));
   };
+
+  // ==========================================
+  // THEME → PREVIEW
+  // ==========================================
 
   const handleThemeNext = (data) => {
-    setBouquetData((previous) => ({
+    setAppState((previous) => ({
       ...previous,
-      theme:
-        data?.theme ||
-        data?.selectedTheme ||
-        data ||
-        null,
-    }));
 
-    setCurrentStep(6);
+      bouquetData: {
+        ...previous.bouquetData,
+
+        theme:
+          data?.theme ||
+          data?.selectedTheme ||
+          data ||
+          null,
+      },
+
+      currentStep: 6,
+    }));
   };
+
+  // ==========================================
+  // BACK
+  // ==========================================
 
   const handleBack = () => {
-    setCurrentStep((previous) =>
-      Math.max(previous - 1, 1)
-    );
+    setAppState((previous) => ({
+      ...previous,
+
+      currentStep: Math.max(
+        previous.currentStep - 1,
+        1
+      ),
+    }));
   };
+
+  // ==========================================
+  // RESET BLOOMWISH
+  // ==========================================
+
+  const handleReset = () => {
+    localStorage.removeItem(STORAGE_KEY);
+
+    setAppState({
+      currentStep: 1,
+      bouquetData: {
+        ...defaultBouquetData,
+        flowers: [],
+      },
+    });
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant",
+    });
+  };
+
+  // ==========================================
+  // SHARED BOUQUET PAGE
+  // ==========================================
+  //
+  // If URL is:
+  //
+  // /bouquet/mt1l5kx4-9p8aoo
+  //
+  // then show SharedBouquet instead of
+  // FlowerSelection.
+  //
+  // ==========================================
+
+  if (sharedBouquetId) {
+    return (
+      <SharedBouquet
+        shareId={sharedBouquetId}
+        backendUrl={BACKEND_URL}
+      />
+    );
+  }
+
+  // ==========================================
+  // STEP 1
+  // ==========================================
 
   if (currentStep === 1) {
     return (
@@ -102,6 +312,10 @@ function App() {
       />
     );
   }
+
+  // ==========================================
+  // STEP 2
+  // ==========================================
 
   if (currentStep === 2) {
     return (
@@ -113,6 +327,10 @@ function App() {
       />
     );
   }
+
+  // ==========================================
+  // STEP 3
+  // ==========================================
 
   if (currentStep === 3) {
     return (
@@ -126,6 +344,10 @@ function App() {
     );
   }
 
+  // ==========================================
+  // STEP 4
+  // ==========================================
+
   if (currentStep === 4) {
     return (
       <Message
@@ -138,6 +360,10 @@ function App() {
       />
     );
   }
+
+  // ==========================================
+  // STEP 5
+  // ==========================================
 
   if (currentStep === 5) {
     return (
@@ -153,11 +379,16 @@ function App() {
     );
   }
 
+  // ==========================================
+  // STEP 6
+  // ==========================================
+
   if (currentStep === 6) {
     return (
       <BouquetPreview
         bouquetData={bouquetData}
         onBack={handleBack}
+        onReset={handleReset}
       />
     );
   }

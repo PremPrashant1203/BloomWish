@@ -3,6 +3,11 @@ import CardRenderer from "../components/cardRender";
 
 const API_BASE_URL = "https://bloomwish.onrender.com";
 
+
+// ==========================================
+// BOUQUET IMAGES
+// ==========================================
+
 const bouquetImages = import.meta.glob(
   "../assets/bouquets/*.png",
   {
@@ -23,6 +28,11 @@ const getBouquetImage = (imageName) => {
     ] || null
   );
 };
+
+
+// ==========================================
+// THEMES
+// ==========================================
 
 const themes = {
   "Soft Blush": {
@@ -86,6 +96,39 @@ const themes = {
   },
 };
 
+
+// ==========================================
+// DATE & TIME HELPERS
+// ==========================================
+
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const getLocalTimeString = (date = new Date()) => {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${hours}:${minutes}`;
+};
+
+const getMaxDateString = (date = new Date()) => {
+  const maxDate = new Date(date);
+
+  maxDate.setDate(maxDate.getDate() + 7);
+
+  return getLocalDateString(maxDate);
+};
+
+
+// ==========================================
+// COMPONENT
+// ==========================================
+
 function BouquetPreview({
   bouquetData,
   onBack,
@@ -102,11 +145,23 @@ function BouquetPreview({
   const [openTime, setOpenTime] =
     useState("immediately");
 
+  const [currentDateTime, setCurrentDateTime] =
+    useState(new Date());
+
+  const todayDate =
+    getLocalDateString(currentDateTime);
+
+  const currentTime =
+    getLocalTimeString(currentDateTime);
+
+  const maxCustomDate =
+    getMaxDateString(currentDateTime);
+
   const [customDate, setCustomDate] =
-    useState("");
+    useState(() => getLocalDateString());
 
   const [customTime, setCustomTime] =
-    useState("");
+    useState(() => getLocalTimeString());
 
   const [generating, setGenerating] =
     useState(false);
@@ -120,18 +175,52 @@ function BouquetPreview({
   const [shared, setShared] =
     useState(false);
 
-  // ==========================================
-  // CARD FULLSCREEN STATE
-  // ==========================================
-
   const [cardExpanded, setCardExpanded] =
     useState(false);
+
+
+  // ==========================================
+  // REAL-TIME DATE & TIME
+  // ==========================================
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+
+  // Keep custom date/time valid as the current time changes.
+  useEffect(() => {
+    if (customDate < todayDate) {
+      setCustomDate(todayDate);
+      setCustomTime(currentTime);
+      return;
+    }
+
+    if (customDate > maxCustomDate) {
+      setCustomDate(maxCustomDate);
+      return;
+    }
+
+    if (customDate === todayDate && customTime < currentTime) {
+      setCustomTime(currentTime);
+    }
+  }, [todayDate, currentTime, maxCustomDate, customDate, customTime]);
+
+
+  // ==========================================
+  // CARD DATA
+  // ==========================================
 
   const selectedCard =
     bouquetData?.card || null;
 
   const messageData =
     bouquetData?.message || {};
+
 
   const recipient =
     typeof messageData === "string"
@@ -142,6 +231,7 @@ function BouquetPreview({
         messageData?.to ||
         "You";
 
+
   const message =
     typeof messageData === "string"
       ? messageData
@@ -151,6 +241,7 @@ function BouquetPreview({
         messageData?.content ||
         "Your message...";
 
+
   const sender =
     typeof messageData === "string"
       ? "PREM"
@@ -159,6 +250,11 @@ function BouquetPreview({
         messageData?.yourName ||
         messageData?.from ||
         "PREM";
+
+
+  // ==========================================
+  // THEME
+  // ==========================================
 
   const themeData =
     bouquetData?.theme || {};
@@ -174,41 +270,17 @@ function BouquetPreview({
     themes[themeName] ||
     themes["Soft Blush"];
 
+
+  // ==========================================
+  // BOUQUET IMAGE
+  // ==========================================
+
   const bouquetImage = useMemo(() => {
     return getBouquetImage(
       matchedBouquet?.image
     );
   }, [matchedBouquet]);
 
-  // ==========================================
-  // CLOSE CARD WITH ESCAPE
-  // ==========================================
-
-  useEffect(() => {
-    if (!cardExpanded) return;
-
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        setCardExpanded(false);
-      }
-    };
-
-    document.addEventListener(
-      "keydown",
-      handleEscape
-    );
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener(
-        "keydown",
-        handleEscape
-      );
-
-      document.body.style.overflow = "";
-    };
-  }, [cardExpanded]);
 
   // ==========================================
   // LOAD MATCHED BOUQUET
@@ -230,10 +302,12 @@ function BouquetPreview({
           return flower?.id;
         });
 
+
         const wrapId =
           typeof bouquetData?.wrap === "string"
             ? bouquetData.wrap
             : bouquetData?.wrap?.id;
+
 
         if (!wrapId) {
           throw new Error(
@@ -241,11 +315,13 @@ function BouquetPreview({
           );
         }
 
+
         if (!flowerIds.length) {
           throw new Error(
             "Flower selection is missing."
           );
         }
+
 
         const response = await fetch(
           `${API_BASE_URL}/api/bouquets/match`,
@@ -264,8 +340,10 @@ function BouquetPreview({
           }
         );
 
+
         const data =
           await response.json();
+
 
         if (!response.ok || !data.success) {
           throw new Error(
@@ -274,15 +352,18 @@ function BouquetPreview({
           );
         }
 
+
         const bouquet =
           data.match ||
           data.bouquet;
+
 
         if (!bouquet) {
           throw new Error(
             "No matching bouquet found."
           );
         }
+
 
         setMatchedBouquet(bouquet);
 
@@ -299,17 +380,51 @@ function BouquetPreview({
       }
     };
 
+
     loadBouquet();
   }, [bouquetData]);
 
+
   // ==========================================
-  // GET OPEN TIME
+  // ESC CLOSE
+  // ==========================================
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (
+        event.key === "Escape" &&
+        cardExpanded
+      ) {
+        setCardExpanded(false);
+      }
+    };
+
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [cardExpanded]);
+
+
+  // ==========================================
+  // OPEN TIME
   // ==========================================
 
   const getOpenAt = () => {
+
     if (openTime === "immediately") {
       return new Date().toISOString();
     }
+
 
     if (openTime === "5minutes") {
       return new Date(
@@ -317,11 +432,13 @@ function BouquetPreview({
       ).toISOString();
     }
 
+
     if (openTime === "1hour") {
       return new Date(
         Date.now() + 60 * 60 * 1000
       ).toISOString();
     }
+
 
     if (openTime === "tomorrow") {
       const date = new Date();
@@ -340,21 +457,34 @@ function BouquetPreview({
       return date.toISOString();
     }
 
+
     if (
       openTime === "custom" &&
       customDate &&
       customTime
     ) {
+      if (customDate < todayDate || customDate > maxCustomDate) {
+        return null;
+      }
+
+      let finalTime = customTime;
+
+      if (customDate === todayDate && finalTime < currentTime) {
+        finalTime = currentTime;
+      }
+
       return new Date(
-        `${customDate}T${customTime}`
+        `${customDate}T${finalTime}`
       ).toISOString();
     }
+
 
     return null;
   };
 
+
   // ==========================================
-  // GENERATE BOUQUET LINK
+  // GENERATE LINK
   // ==========================================
 
   const handleGenerateLink = async () => {
@@ -362,7 +492,9 @@ function BouquetPreview({
       setGenerating(true);
       setError("");
 
+
       const openAt = getOpenAt();
+
 
       if (!openAt) {
         setError(
@@ -374,6 +506,7 @@ function BouquetPreview({
         return;
       }
 
+
       const flowerIds = (
         bouquetData?.flowers || []
       ).map((flower) => {
@@ -384,10 +517,12 @@ function BouquetPreview({
         return flower?.id;
       });
 
+
       const wrapId =
         typeof bouquetData?.wrap === "string"
           ? bouquetData.wrap
           : bouquetData?.wrap?.id;
+
 
       const payload = {
         bouquetId:
@@ -406,10 +541,12 @@ function BouquetPreview({
         openAt,
       };
 
+
       console.log(
         "Bouquet Link Payload:",
         payload
       );
+
 
       const response = await fetch(
         `${API_BASE_URL}/api/bouquets/create`,
@@ -425,8 +562,10 @@ function BouquetPreview({
         }
       );
 
+
       const data =
         await response.json();
+
 
       if (!response.ok || !data.success) {
         throw new Error(
@@ -435,18 +574,22 @@ function BouquetPreview({
         );
       }
 
+
       const link =
         data.link ||
         data.shareLink;
+
 
       if (link) {
         setGeneratedLink(link);
         return;
       }
 
+
       const shareId =
         data.shareId ||
         data.id;
+
 
       if (shareId) {
         setGeneratedLink(
@@ -455,6 +598,7 @@ function BouquetPreview({
 
         return;
       }
+
 
       throw new Error(
         "Backend did not return a link."
@@ -466,6 +610,7 @@ function BouquetPreview({
         err
       );
 
+
       setError(
         err.message ||
           "Unable to generate link."
@@ -476,19 +621,23 @@ function BouquetPreview({
     }
   };
 
+
   // ==========================================
-  // COPY LINK
+  // COPY
   // ==========================================
 
   const handleCopy = async () => {
     if (!generatedLink) return;
+
 
     try {
       await navigator.clipboard.writeText(
         generatedLink
       );
 
+
       setCopied(true);
+
 
       setTimeout(() => {
         setCopied(false);
@@ -499,15 +648,19 @@ function BouquetPreview({
     }
   };
 
+
   // ==========================================
-  // SHARE LINK
+  // SHARE
   // ==========================================
 
   const handleShare = async () => {
     if (!generatedLink) return;
 
+
     try {
+
       if (navigator.share) {
+
         await navigator.share({
           title:
             "Your BloomWish Bouquet",
@@ -518,18 +671,23 @@ function BouquetPreview({
           url: generatedLink,
         });
 
+
         setShared(true);
+
 
         setTimeout(() => {
           setShared(false);
         }, 2000);
 
+
         return;
       }
+
 
       await handleCopy();
 
       setShared(true);
+
 
       setTimeout(() => {
         setShared(false);
@@ -540,6 +698,7 @@ function BouquetPreview({
     }
   };
 
+
   // ==========================================
   // LOADING
   // ==========================================
@@ -547,12 +706,13 @@ function BouquetPreview({
   if (loading) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center"
+        className="flex min-h-screen items-center justify-center px-4"
         style={{
           background:
             selectedTheme.background,
         }}
       >
+
         <div className="text-center">
 
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-white/60 border-t-[#df5890]" />
@@ -562,9 +722,11 @@ function BouquetPreview({
           </p>
 
         </div>
+
       </div>
     );
   }
+
 
   // ==========================================
   // ERROR
@@ -579,6 +741,7 @@ function BouquetPreview({
             selectedTheme.background,
         }}
       >
+
         <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-xl">
 
           <h2 className="text-xl font-bold text-[#4f4650]">
@@ -598,189 +761,117 @@ function BouquetPreview({
           </button>
 
         </div>
+
       </div>
     );
   }
 
+
   // ==========================================
-  // MAIN PREVIEW
+  // MAIN
   // ==========================================
 
   return (
-    <>
-      {/* ========================================
-          CARD ANIMATIONS
-      ========================================= */}
+    <div
+      className="min-h-screen overflow-x-hidden px-4 py-5 sm:px-6 sm:py-7"
+      style={{
+        background:
+          selectedTheme.background,
+      }}
+    >
 
-      <style>{`
-        @keyframes bloomCardFloat {
-          0% {
-            transform: translateY(0px);
-          }
+      <main className="mx-auto max-w-4xl">
 
-          50% {
-            transform: translateY(-5px);
-          }
 
-          100% {
-            transform: translateY(0px);
-          }
-        }
+        {/* =====================================
+            TITLE
+        ====================================== */}
 
-        @keyframes cardModalFade {
-          from {
-            opacity: 0;
-          }
+        <div className="text-center">
 
-          to {
-            opacity: 1;
-          }
-        }
+          <p className="text-xs font-semibold text-[#d4477d] sm:text-sm">
+            Your BloomWish Bouquet
+          </p>
 
-        @keyframes cardZoomIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.72);
-          }
+          <h1 className="mt-1 font-serif text-3xl font-semibold text-[#d4477d] sm:text-5xl">
+            A Bouquet Just For You
+          </h1>
 
-          70% {
-            opacity: 1;
-            transform: scale(1.03);
-          }
+        </div>
 
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
 
-        @keyframes cardGlow {
-          0% {
-            box-shadow:
-              0 12px 25px rgba(70, 40, 60, 0.12);
-          }
+        {/* =====================================
+            BOUQUET + CARD
+        ====================================== */}
 
-          50% {
-            box-shadow:
-              0 18px 35px rgba(70, 40, 60, 0.20);
-          }
+        <div className="mt-3 flex flex-col items-center">
 
-          100% {
-            box-shadow:
-              0 12px 25px rgba(70, 40, 60, 0.12);
-          }
-        }
 
-        .bloomwish-card-small {
-          animation:
-            bloomCardFloat 3.5s ease-in-out infinite,
-            cardGlow 3.5s ease-in-out infinite;
-        }
+          {/* ===================================
+              BOUQUET
+          ==================================== */}
 
-        .bloomwish-card-modal {
-          animation:
-            cardModalFade 0.25s ease-out forwards;
-        }
+          {bouquetImage && (
+            <img
+              src={bouquetImage}
+              alt="Your BloomWish Bouquet"
+              className="max-h-[380px] w-auto max-w-[72%] object-contain drop-shadow-[0_20px_30px_rgba(80,40,60,0.20)] sm:max-h-[450px] sm:max-w-[65%]"
+            />
+          )}
 
-        .bloomwish-card-expanded {
-          animation:
-            cardZoomIn 0.42s
-            cubic-bezier(0.22, 1, 0.36, 1)
-            forwards;
-        }
 
-        @media (prefers-reduced-motion: reduce) {
-          .bloomwish-card-small,
-          .bloomwish-card-modal,
-          .bloomwish-card-expanded {
-            animation: none;
-          }
-        }
-      `}</style>
+          {/* ===================================
+              SMALL CARD
+          ==================================== */}
 
-      <div
-        className="min-h-screen px-4 py-8 sm:px-6"
-        style={{
-          background:
-            selectedTheme.background,
-        }}
-      >
-        <main className="mx-auto max-w-4xl">
+          {selectedCard && (
+            <>
 
-          {/* =====================================
-              TITLE
-          ====================================== */}
+              <button
+                type="button"
+                aria-label="Open greeting card"
+                onClick={() =>
+                  setCardExpanded(true)
+                }
+                className="-mt-3 w-full max-w-[270px] cursor-pointer border-0 bg-transparent p-0 text-left transition-transform duration-300 hover:scale-[1.02] sm:max-w-[300px]"
+              >
 
-          <div className="text-center">
+                <CardRenderer
+                  card={selectedCard}
+                  recipient={recipient}
+                  message={message}
+                  sender={sender}
+                />
 
-            <p className="text-sm font-semibold text-[#d4477d]">
-              Your BloomWish Bouquet
-            </p>
+              </button>
 
-            <h1 className="mt-1 font-serif text-4xl font-semibold text-[#d4477d] sm:text-5xl">
-              A Bouquet Just For You
-            </h1>
 
-          </div>
+              {/* =================================
+                  FULLSCREEN CARD
+              ================================== */}
 
-          {/* =====================================
-              BOUQUET + CARD
-          ====================================== */}
-
-          <div className="mt-4 flex flex-col items-center">
-
-            {/* ===================================
-                BOUQUET IMAGE
-            ==================================== */}
-
-            {bouquetImage && (
-              <img
-                src={bouquetImage}
-                alt="Your BloomWish Bouquet"
-                className="max-h-[450px] w-auto max-w-[78%] object-contain drop-shadow-[0_18px_28px_rgba(80,40,60,0.20)] sm:max-h-[500px] sm:max-w-[72%]"
-              />
-            )}
-
-            {/* ===================================
-                CARD
-            ==================================== */}
-
-            {selectedCard && (
-              <>
-                {/* =================================
-                    SMALL CARD
-                ================================== */}
-
-                <button
-                  type="button"
-                  aria-label="Expand card"
+              {cardExpanded && (
+                <div
+                  className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/65 px-4 py-5 backdrop-blur-sm"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Expanded greeting card"
                   onClick={() =>
-                    setCardExpanded(true)
+                    setCardExpanded(false)
                   }
-                  className="bloomwish-card-small -mt-3 w-full max-w-[300px] cursor-pointer border-0 bg-transparent p-0 text-left transition-transform duration-300 hover:scale-[1.015] active:scale-[0.98] sm:max-w-[330px]"
                 >
-                  <CardRenderer
-                    card={selectedCard}
-                    recipient={recipient}
-                    message={message}
-                    sender={sender}
-                  />
-                </button>
 
-                {/* =================================
-                    FULLSCREEN CARD
-                ================================== */}
+                  {/* =================================
+                      RESPONSIVE MODAL
+                  ================================== */}
 
-                {cardExpanded && (
                   <div
-                    className="bloomwish-card-modal fixed inset-0 z-[9999] flex min-h-screen items-center justify-center bg-[#071a3d]/90 p-3 backdrop-blur-md sm:p-6"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="Expanded greeting card"
-                    onClick={() =>
-                      setCardExpanded(false)
+                    className="relative flex h-[calc(100vh-40px)] max-h-[760px] w-full max-w-[440px] items-center justify-center"
+                    onClick={(event) =>
+                      event.stopPropagation()
                     }
                   >
+
 
                     {/* =================================
                         CLOSE BUTTON
@@ -792,278 +883,325 @@ function BouquetPreview({
                       onClick={() =>
                         setCardExpanded(false)
                       }
-                      className="absolute right-4 top-4 z-[10001] flex h-11 w-11 items-center justify-center rounded-full bg-white text-3xl font-light leading-none text-[#273451] shadow-2xl transition-all duration-200 hover:scale-110 active:scale-95 sm:right-6 sm:top-6"
+                      className="absolute right-[-6px] top-[-6px] z-[10000] flex h-10 w-10 items-center justify-center rounded-full bg-white text-[27px] font-light leading-none text-[#4f4650] shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 sm:h-11 sm:w-11"
                     >
                       ×
                     </button>
 
+
                     {/* =================================
-                        FULL CARD
+                        CARD
+                        NO SCROLL
                     ================================== */}
 
                     <div
-                      className="bloomwish-card-expanded flex max-h-[94vh] max-w-[96vw] items-center justify-center"
-                      onClick={(event) =>
-                        event.stopPropagation()
-                      }
+                      className="
+                        flex
+                        max-h-full
+                        w-full
+                        items-center
+                        justify-center
+                        overflow-hidden
+                        rounded-3xl
+                      "
                     >
-                      <div className="max-h-[94vh] w-[92vw] max-w-[900px] overflow-auto rounded-[28px] sm:w-[82vw]">
+
+                      <div
+                        className="
+                          w-full
+                          max-w-[420px]
+                          origin-center
+                        "
+                      >
+
                         <CardRenderer
                           card={selectedCard}
                           recipient={recipient}
                           message={message}
                           sender={sender}
                         />
+
                       </div>
+
                     </div>
 
                   </div>
-                )}
 
-                {/* CARD HINT */}
+                </div>
+              )}
 
-                <p className="mt-3 text-xs font-medium text-[#927f8a]">
-                  Tap the card to expand
-                </p>
-              </>
-            )}
+            </>
+          )}
 
-          </div>
+        </div>
 
-          {/* =====================================
-              OPEN TIME
-          ====================================== */}
 
-          <section className="mx-auto mt-7 max-w-xl rounded-3xl bg-white/90 p-6 shadow-[0_15px_35px_rgba(70,40,60,0.15)]">
+        {/* =====================================
+            OPEN TIME
+        ====================================== */}
 
-            <h2 className="text-center text-lg font-bold text-[#4f4650]">
-              When should they open it?
-            </h2>
+        <section className="mx-auto mt-6 max-w-xl rounded-3xl bg-white/90 p-5 shadow-[0_15px_35px_rgba(70,40,60,0.15)]">
 
-            <p className="mt-1 text-center text-xs text-[#927f8a]">
-              Choose when the recipient can open your bouquet.
-            </p>
+          <h2 className="text-center text-lg font-bold text-[#4f4650]">
+            When should they open it? 💌
+          </h2>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
+          <p className="mt-1 text-center text-xs text-[#927f8a]">
+            Choose when the recipient can open your bouquet.
+          </p>
 
-              {/* IMMEDIATELY */}
 
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenTime("immediately")
-                }
-                className={`rounded-2xl border p-4 text-sm font-semibold ${
-                  openTime === "immediately"
-                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                    : "border-[#edd8e1] bg-white text-[#766b74]"
-                }`}
-              >
-                Open Immediately
-              </button>
+          <div className="mt-4 grid grid-cols-2 gap-3">
 
-              {/* 5 MINUTES */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenTime("5minutes")
-                }
-                className={`rounded-2xl border p-4 text-sm font-semibold ${
-                  openTime === "5minutes"
-                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                    : "border-[#edd8e1] bg-white text-[#766b74]"
-                }`}
-              >
-                After 5 Minutes
-              </button>
-
-              {/* 1 HOUR */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenTime("1hour")
-                }
-                className={`rounded-2xl border p-4 text-sm font-semibold ${
-                  openTime === "1hour"
-                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                    : "border-[#edd8e1] bg-white text-[#766b74]"
-                }`}
-              >
-                After 1 Hour
-              </button>
-
-              {/* TOMORROW */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenTime("tomorrow")
-                }
-                className={`rounded-2xl border p-4 text-sm font-semibold ${
-                  openTime === "tomorrow"
-                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                    : "border-[#edd8e1] bg-white text-[#766b74]"
-                }`}
-              >
-                Tomorrow
-              </button>
-
-            </div>
-
-            {/* CUSTOM */}
 
             <button
               type="button"
               onClick={() =>
-                setOpenTime("custom")
+                setOpenTime("immediately")
               }
-              className={`mt-3 w-full rounded-2xl border p-4 text-sm font-semibold ${
-                openTime === "custom"
+              className={`rounded-2xl border p-3 text-sm font-semibold ${
+                openTime === "immediately"
                   ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
                   : "border-[#edd8e1] bg-white text-[#766b74]"
               }`}
             >
-              Custom Date & Time
+              Open Immediately
             </button>
 
-            {openTime === "custom" && (
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-
-                <input
-                  type="date"
-                  value={customDate}
-                  onChange={(e) =>
-                    setCustomDate(
-                      e.target.value
-                    )
-                  }
-                  className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
-                />
-
-                <input
-                  type="time"
-                  value={customTime}
-                  onChange={(e) =>
-                    setCustomTime(
-                      e.target.value
-                    )
-                  }
-                  className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
-                />
-
-              </div>
-            )}
-
-          </section>
-
-          {/* =====================================
-              ERROR
-          ====================================== */}
-
-          {error && (
-            <p className="mx-auto mt-4 max-w-xl rounded-xl bg-white p-3 text-center text-sm text-[#c55778]">
-              {error}
-            </p>
-          )}
-
-          {/* =====================================
-              GENERATE LINK BUTTON
-          ====================================== */}
-
-          {!generatedLink && (
-            <div className="mt-7 text-center">
-
-              <button
-                type="button"
-                onClick={
-                  handleGenerateLink
-                }
-                disabled={generating}
-                className="rounded-full bg-[#df5890] px-9 py-3.5 font-bold text-white shadow-[0_10px_25px_rgba(223,88,144,0.30)] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-              >
-                {generating
-                  ? "Generating Link..."
-                  : "Generate Bouquet Link"}
-              </button>
-
-            </div>
-          )}
-
-          {/* =====================================
-              GENERATED LINK
-          ====================================== */}
-
-          {generatedLink && (
-            <section className="mx-auto mt-5 max-w-lg rounded-3xl bg-white p-5 text-center shadow-lg">
-
-              <h2 className="text-xl font-bold text-[#4f4650]">
-                Your bouquet is ready!
-              </h2>
-
-              <p className="mt-1 text-sm text-[#927f8a]">
-                Share this link with someone special.
-              </p>
-
-              {/* LINK */}
-
-              <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[#efd5e0] bg-[#fff7fa] p-2">
-
-                <input
-                  type="text"
-                  value={generatedLink}
-                  readOnly
-                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-[#4f4650] outline-none"
-                />
-
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="rounded-xl bg-[#df5890] px-4 py-2.5 text-xs font-bold text-white"
-                >
-                  {copied
-                    ? "Copied ✓"
-                    : "Copy"}
-                </button>
-
-              </div>
-
-              {/* SHARE */}
-
-              <button
-                type="button"
-                onClick={handleShare}
-                className="mt-3 w-full rounded-full bg-[#4f4650] px-6 py-2.5 font-bold text-white transition-transform duration-200 hover:scale-[1.01] active:scale-[0.98]"
-              >
-                {shared
-                  ? "Shared ✓"
-                  : "↗ Share Bouquet"}
-              </button>
-
-            </section>
-          )}
-
-          {/* =====================================
-              BACK
-          ====================================== */}
-
-          <div className="pb-8 pt-7 text-center">
 
             <button
               type="button"
-              onClick={onBack}
-              className="rounded-full border border-[#edcbd9] bg-white px-7 py-3 text-sm font-semibold text-[#766b74]"
+              onClick={() =>
+                setOpenTime("5minutes")
+              }
+              className={`rounded-2xl border p-3 text-sm font-semibold ${
+                openTime === "5minutes"
+                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                  : "border-[#edd8e1] bg-white text-[#766b74]"
+              }`}
             >
-              ← Back
+              After 5 Minutes
+            </button>
+
+
+            <button
+              type="button"
+              onClick={() =>
+                setOpenTime("1hour")
+              }
+              className={`rounded-2xl border p-3 text-sm font-semibold ${
+                openTime === "1hour"
+                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                  : "border-[#edd8e1] bg-white text-[#766b74]"
+              }`}
+            >
+              After 1 Hour
+            </button>
+
+
+            <button
+              type="button"
+              onClick={() =>
+                setOpenTime("tomorrow")
+              }
+              className={`rounded-2xl border p-3 text-sm font-semibold ${
+                openTime === "tomorrow"
+                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                  : "border-[#edd8e1] bg-white text-[#766b74]"
+              }`}
+            >
+              Tomorrow
             </button>
 
           </div>
 
-        </main>
-      </div>
-    </>
+
+          <button
+            type="button"
+            onClick={() =>
+              setOpenTime("custom")
+            }
+            className={`mt-3 w-full rounded-2xl border p-3 text-sm font-semibold ${
+              openTime === "custom"
+                ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                : "border-[#edd8e1] bg-white text-[#766b74]"
+            }`}
+          >
+            Custom Date & Time
+          </button>
+
+
+          {openTime === "custom" && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+
+              <input
+                type="date"
+                value={customDate}
+                min={todayDate}
+                max={maxCustomDate}
+                onChange={(event) => {
+                  const selectedDate = event.target.value;
+
+                  if (selectedDate < todayDate) {
+                    setCustomDate(todayDate);
+                    setCustomTime(currentTime);
+                    return;
+                  }
+
+                  if (selectedDate > maxCustomDate) {
+                    setCustomDate(maxCustomDate);
+                    return;
+                  }
+
+                  setCustomDate(selectedDate);
+
+                  if (selectedDate === todayDate && customTime < currentTime) {
+                    setCustomTime(currentTime);
+                  }
+                }}
+                className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
+              />
+
+
+              <input
+                type="time"
+                value={customTime}
+                min={
+                  customDate === todayDate
+                    ? currentTime
+                    : "00:00"
+                }
+                onChange={(event) => {
+                  const selectedTime = event.target.value;
+
+                  if (
+                    customDate === todayDate &&
+                    selectedTime < currentTime
+                  ) {
+                    setCustomTime(currentTime);
+                    return;
+                  }
+
+                  setCustomTime(selectedTime);
+                }}
+                className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
+              />
+
+            </div>
+          )}
+
+        </section>
+
+
+        {/* =====================================
+            ERROR
+        ====================================== */}
+
+        {error && (
+          <p className="mx-auto mt-4 max-w-xl rounded-xl bg-white p-3 text-center text-sm text-[#c55778]">
+            {error}
+          </p>
+        )}
+
+
+        {/* =====================================
+            GENERATE LINK
+        ====================================== */}
+
+        {!generatedLink && (
+          <div className="mt-6 text-center">
+
+            <button
+              type="button"
+              onClick={
+                handleGenerateLink
+              }
+              disabled={generating}
+              className="rounded-full bg-[#df5890] px-8 py-3 font-bold text-white shadow-[0_10px_25px_rgba(223,88,144,0.30)] disabled:opacity-50"
+            >
+              {generating
+                ? "Generating Link..."
+                : "🔗 Generate Bouquet Link"}
+            </button>
+
+          </div>
+        )}
+
+
+        {/* =====================================
+            GENERATED LINK
+        ====================================== */}
+
+        {generatedLink && (
+          <section className="mx-auto mt-5 max-w-lg rounded-3xl bg-white p-4 text-center shadow-lg">
+
+            <h2 className="text-lg font-bold text-[#4f4650]">
+              Your bouquet is ready!
+            </h2>
+
+
+            <p className="mt-1 text-xs text-[#927f8a]">
+              Share this link with someone special.
+            </p>
+
+
+            <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[#efd5e0] bg-[#fff7fa] p-1.5">
+
+              <input
+                type="text"
+                value={generatedLink}
+                readOnly
+                className="min-w-0 flex-1 bg-transparent px-2 text-xs text-[#4f4650] outline-none"
+              />
+
+
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="rounded-xl bg-[#df5890] px-4 py-2 text-xs font-bold text-white"
+              >
+                {copied
+                  ? "Copied ✓"
+                  : "Copy"}
+              </button>
+
+            </div>
+
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className="mt-2.5 w-full rounded-full bg-[#4f4650] px-6 py-2.5 text-sm font-bold text-white"
+            >
+              {shared
+                ? "Shared ✓"
+                : "↗ Share Bouquet"}
+            </button>
+
+          </section>
+        )}
+
+
+        {/* =====================================
+            BACK
+        ====================================== */}
+
+        <div className="pb-7 pt-6 text-center">
+
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded-full border border-[#edcbd9] bg-white px-7 py-3 text-sm font-semibold text-[#766b74]"
+          >
+            ← Back
+          </button>
+
+        </div>
+
+      </main>
+    </div>
   );
 }
+
 
 export default BouquetPreview;
