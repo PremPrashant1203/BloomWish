@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import CardRenderer from "../components/cardRender";
 
+const API_BASE_URL = "https://bloomwish.onrender.com";
+
 const bouquetImages = import.meta.glob(
   "../assets/bouquets/*.png",
   {
@@ -205,7 +207,7 @@ function BouquetPreview({
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/bouquets/match",
+          `${API_BASE_URL}/api/bouquets/match`,
           {
             method: "POST",
             headers: {
@@ -356,7 +358,7 @@ function BouquetPreview({
       );
 
       const response = await fetch(
-        "http://localhost:5000/api/bouquets/create",
+        `${API_BASE_URL}/api/bouquets/create`,
         {
           method: "POST",
           headers: {
