@@ -120,6 +120,13 @@ function BouquetPreview({
   const [shared, setShared] =
     useState(false);
 
+  // ==========================================
+  // CARD FULLSCREEN STATE
+  // ==========================================
+
+  const [cardExpanded, setCardExpanded] =
+    useState(false);
+
   const selectedCard =
     bouquetData?.card || null;
 
@@ -173,6 +180,40 @@ function BouquetPreview({
     );
   }, [matchedBouquet]);
 
+  // ==========================================
+  // CLOSE CARD WITH ESCAPE
+  // ==========================================
+
+  useEffect(() => {
+    if (!cardExpanded) return;
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setCardExpanded(false);
+      }
+    };
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+
+      document.body.style.overflow = "";
+    };
+  }, [cardExpanded]);
+
+  // ==========================================
+  // LOAD MATCHED BOUQUET
+  // ==========================================
+
   useEffect(() => {
     const loadBouquet = async () => {
       try {
@@ -210,10 +251,12 @@ function BouquetPreview({
           `${API_BASE_URL}/api/bouquets/match`,
           {
             method: "POST",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               flowerIds,
               wrapId,
@@ -242,6 +285,7 @@ function BouquetPreview({
         }
 
         setMatchedBouquet(bouquet);
+
       } catch (err) {
         console.error(err);
 
@@ -249,6 +293,7 @@ function BouquetPreview({
           err.message ||
             "Unable to create bouquet."
         );
+
       } finally {
         setLoading(false);
       }
@@ -256,6 +301,10 @@ function BouquetPreview({
 
     loadBouquet();
   }, [bouquetData]);
+
+  // ==========================================
+  // GET OPEN TIME
+  // ==========================================
 
   const getOpenAt = () => {
     if (openTime === "immediately") {
@@ -304,6 +353,10 @@ function BouquetPreview({
     return null;
   };
 
+  // ==========================================
+  // GENERATE BOUQUET LINK
+  // ==========================================
+
   const handleGenerateLink = async () => {
     try {
       setGenerating(true);
@@ -317,6 +370,7 @@ function BouquetPreview({
         );
 
         setGenerating(false);
+
         return;
       }
 
@@ -361,10 +415,12 @@ function BouquetPreview({
         `${API_BASE_URL}/api/bouquets/create`,
         {
           method: "POST",
+
           headers: {
             "Content-Type":
               "application/json",
           },
+
           body: JSON.stringify(payload),
         }
       );
@@ -403,6 +459,7 @@ function BouquetPreview({
       throw new Error(
         "Backend did not return a link."
       );
+
     } catch (err) {
       console.error(
         "Generate Link Error:",
@@ -413,10 +470,15 @@ function BouquetPreview({
         err.message ||
           "Unable to generate link."
       );
+
     } finally {
       setGenerating(false);
     }
   };
+
+  // ==========================================
+  // COPY LINK
+  // ==========================================
 
   const handleCopy = async () => {
     if (!generatedLink) return;
@@ -431,10 +493,15 @@ function BouquetPreview({
       setTimeout(() => {
         setCopied(false);
       }, 2000);
+
     } catch (err) {
       console.error(err);
     }
   };
+
+  // ==========================================
+  // SHARE LINK
+  // ==========================================
 
   const handleShare = async () => {
     if (!generatedLink) return;
@@ -443,9 +510,11 @@ function BouquetPreview({
       if (navigator.share) {
         await navigator.share({
           title:
-            "Your BloomWish Bouquet 🌷",
+            "Your BloomWish Bouquet",
+
           text:
             "Someone created a special bouquet for you.",
+
           url: generatedLink,
         });
 
@@ -465,10 +534,15 @@ function BouquetPreview({
       setTimeout(() => {
         setShared(false);
       }, 2000);
+
     } catch (err) {
       console.error(err);
     }
   };
+
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (loading) {
     return (
@@ -492,6 +566,10 @@ function BouquetPreview({
     );
   }
 
+  // ==========================================
+  // ERROR
+  // ==========================================
+
   if (error && !matchedBouquet) {
     return (
       <div
@@ -503,11 +581,7 @@ function BouquetPreview({
       >
         <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-xl">
 
-          <div className="text-5xl">
-            🌷
-          </div>
-
-          <h2 className="mt-4 text-xl font-bold text-[#4f4650]">
+          <h2 className="text-xl font-bold text-[#4f4650]">
             Bouquet couldn't be created
           </h2>
 
@@ -528,253 +602,467 @@ function BouquetPreview({
     );
   }
 
+  // ==========================================
+  // MAIN PREVIEW
+  // ==========================================
+
   return (
-    <div
-      className="min-h-screen px-4 py-8 sm:px-6"
-      style={{
-        background:
-          selectedTheme.background,
-      }}
-    >
-      <main className="mx-auto max-w-4xl">
+    <>
+      {/* ========================================
+          CARD ANIMATIONS
+      ========================================= */}
 
-        <div className="text-center">
+      <style>{`
+        @keyframes bloomCardFloat {
+          0% {
+            transform: translateY(0px);
+          }
 
-          <p className="text-sm font-semibold text-[#d4477d]">
-            Your BloomWish Bouquet 🌷
-          </p>
+          50% {
+            transform: translateY(-5px);
+          }
 
-          <h1 className="mt-1 font-serif text-4xl font-semibold text-[#d4477d] sm:text-5xl">
-            A Bouquet Just For You
-          </h1>
+          100% {
+            transform: translateY(0px);
+          }
+        }
 
-        </div>
+        @keyframes cardModalFade {
+          from {
+            opacity: 0;
+          }
 
-        <div className="mt-5 flex flex-col items-center">
+          to {
+            opacity: 1;
+          }
+        }
 
-          {bouquetImage && (
-            <img
-              src={bouquetImage}
-              alt="Your BloomWish Bouquet"
-              className="max-h-[600px] w-auto max-w-[95%] object-contain drop-shadow-[0_25px_35px_rgba(80,40,60,0.22)]"
-            />
-          )}
+        @keyframes cardZoomIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.72);
+          }
 
-          {selectedCard && (
-            <div className="-mt-5 w-full max-w-[390px]">
-              <CardRenderer
-                card={selectedCard}
-                recipient={recipient}
-                message={message}
-                sender={sender}
-              />
-            </div>
-          )}
+          70% {
+            opacity: 1;
+            transform: scale(1.03);
+          }
 
-        </div>
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
 
-        <section className="mx-auto mt-8 max-w-xl rounded-3xl bg-white/90 p-6 shadow-[0_15px_35px_rgba(70,40,60,0.15)]">
+        @keyframes cardGlow {
+          0% {
+            box-shadow:
+              0 12px 25px rgba(70, 40, 60, 0.12);
+          }
 
-          <h2 className="text-center text-lg font-bold text-[#4f4650]">
-            When should they open it? 💌
-          </h2>
+          50% {
+            box-shadow:
+              0 18px 35px rgba(70, 40, 60, 0.20);
+          }
 
-          <p className="mt-1 text-center text-xs text-[#927f8a]">
-            Choose when the recipient can open your bouquet.
-          </p>
+          100% {
+            box-shadow:
+              0 12px 25px rgba(70, 40, 60, 0.12);
+          }
+        }
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
+        .bloomwish-card-small {
+          animation:
+            bloomCardFloat 3.5s ease-in-out infinite,
+            cardGlow 3.5s ease-in-out infinite;
+        }
 
-            <button
-              type="button"
-              onClick={() =>
-                setOpenTime("immediately")
-              }
-              className={`rounded-2xl border p-4 text-sm font-semibold ${
-                openTime === "immediately"
-                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                  : "border-[#edd8e1] bg-white text-[#766b74]"
-              }`}
-            >
-              Open Immediately
-            </button>
+        .bloomwish-card-modal {
+          animation:
+            cardModalFade 0.25s ease-out forwards;
+        }
 
-            <button
-              type="button"
-              onClick={() =>
-                setOpenTime("5minutes")
-              }
-              className={`rounded-2xl border p-4 text-sm font-semibold ${
-                openTime === "5minutes"
-                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                  : "border-[#edd8e1] bg-white text-[#766b74]"
-              }`}
-            >
-              After 5 Minutes
-            </button>
+        .bloomwish-card-expanded {
+          animation:
+            cardZoomIn 0.42s
+            cubic-bezier(0.22, 1, 0.36, 1)
+            forwards;
+        }
 
-            <button
-              type="button"
-              onClick={() =>
-                setOpenTime("1hour")
-              }
-              className={`rounded-2xl border p-4 text-sm font-semibold ${
-                openTime === "1hour"
-                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                  : "border-[#edd8e1] bg-white text-[#766b74]"
-              }`}
-            >
-              After 1 Hour
-            </button>
+        @media (prefers-reduced-motion: reduce) {
+          .bloomwish-card-small,
+          .bloomwish-card-modal,
+          .bloomwish-card-expanded {
+            animation: none;
+          }
+        }
+      `}</style>
 
-            <button
-              type="button"
-              onClick={() =>
-                setOpenTime("tomorrow")
-              }
-              className={`rounded-2xl border p-4 text-sm font-semibold ${
-                openTime === "tomorrow"
-                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                  : "border-[#edd8e1] bg-white text-[#766b74]"
-              }`}
-            >
-              Tomorrow
-            </button>
+      <div
+        className="min-h-screen px-4 py-8 sm:px-6"
+        style={{
+          background:
+            selectedTheme.background,
+        }}
+      >
+        <main className="mx-auto max-w-4xl">
 
-          </div>
+          {/* =====================================
+              TITLE
+          ====================================== */}
 
-          <button
-            type="button"
-            onClick={() =>
-              setOpenTime("custom")
-            }
-            className={`mt-3 w-full rounded-2xl border p-4 text-sm font-semibold ${
-              openTime === "custom"
-                ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
-                : "border-[#edd8e1] bg-white text-[#766b74]"
-            }`}
-          >
-            Custom Date & Time
-          </button>
+          <div className="text-center">
 
-          {openTime === "custom" && (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-
-              <input
-                type="date"
-                value={customDate}
-                onChange={(e) =>
-                  setCustomDate(
-                    e.target.value
-                  )
-                }
-                className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
-              />
-
-              <input
-                type="time"
-                value={customTime}
-                onChange={(e) =>
-                  setCustomTime(
-                    e.target.value
-                  )
-                }
-                className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
-              />
-
-            </div>
-          )}
-
-        </section>
-
-        {error && (
-          <p className="mx-auto mt-4 max-w-xl rounded-xl bg-white p-3 text-center text-sm text-[#c55778]">
-            {error}
-          </p>
-        )}
-
-        {!generatedLink && (
-          <div className="mt-7 text-center">
-
-            <button
-              type="button"
-              onClick={
-                handleGenerateLink
-              }
-              disabled={generating}
-              className="rounded-full bg-[#df5890] px-9 py-3.5 font-bold text-white shadow-[0_10px_25px_rgba(223,88,144,0.30)] disabled:opacity-50"
-            >
-              {generating
-                ? "Generating Link..."
-                : "🔗 Generate Bouquet Link"}
-            </button>
-
-          </div>
-        )}
-
-        {generatedLink && (
-          <section className="mx-auto mt-7 max-w-xl rounded-3xl bg-white p-6 text-center shadow-xl">
-
-            <div className="text-4xl">
-              💐
-            </div>
-
-            <h2 className="mt-2 text-xl font-bold text-[#4f4650]">
-              Your bouquet is ready!
-            </h2>
-
-            <p className="mt-1 text-sm text-[#927f8a]">
-              Share this link with someone special.
+            <p className="text-sm font-semibold text-[#d4477d]">
+              Your BloomWish Bouquet
             </p>
 
-            <div className="mt-5 flex items-center gap-2 rounded-2xl border border-[#efd5e0] bg-[#fff7fa] p-2">
+            <h1 className="mt-1 font-serif text-4xl font-semibold text-[#d4477d] sm:text-5xl">
+              A Bouquet Just For You
+            </h1>
 
-              <input
-                type="text"
-                value={generatedLink}
-                readOnly
-                className="min-w-0 flex-1 bg-transparent px-3 text-sm text-[#4f4650] outline-none"
+          </div>
+
+          {/* =====================================
+              BOUQUET + CARD
+          ====================================== */}
+
+          <div className="mt-4 flex flex-col items-center">
+
+            {/* ===================================
+                BOUQUET IMAGE
+            ==================================== */}
+
+            {bouquetImage && (
+              <img
+                src={bouquetImage}
+                alt="Your BloomWish Bouquet"
+                className="max-h-[450px] w-auto max-w-[78%] object-contain drop-shadow-[0_18px_28px_rgba(80,40,60,0.20)] sm:max-h-[500px] sm:max-w-[72%]"
               />
+            )}
+
+            {/* ===================================
+                CARD
+            ==================================== */}
+
+            {selectedCard && (
+              <>
+                {/* =================================
+                    SMALL CARD
+                ================================== */}
+
+                <button
+                  type="button"
+                  aria-label="Expand card"
+                  onClick={() =>
+                    setCardExpanded(true)
+                  }
+                  className="bloomwish-card-small -mt-3 w-full max-w-[300px] cursor-pointer border-0 bg-transparent p-0 text-left transition-transform duration-300 hover:scale-[1.015] active:scale-[0.98] sm:max-w-[330px]"
+                >
+                  <CardRenderer
+                    card={selectedCard}
+                    recipient={recipient}
+                    message={message}
+                    sender={sender}
+                  />
+                </button>
+
+                {/* =================================
+                    FULLSCREEN CARD
+                ================================== */}
+
+                {cardExpanded && (
+                  <div
+                    className="bloomwish-card-modal fixed inset-0 z-[9999] flex min-h-screen items-center justify-center bg-[#071a3d]/90 p-3 backdrop-blur-md sm:p-6"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Expanded greeting card"
+                    onClick={() =>
+                      setCardExpanded(false)
+                    }
+                  >
+
+                    {/* =================================
+                        CLOSE BUTTON
+                    ================================== */}
+
+                    <button
+                      type="button"
+                      aria-label="Close card"
+                      onClick={() =>
+                        setCardExpanded(false)
+                      }
+                      className="absolute right-4 top-4 z-[10001] flex h-11 w-11 items-center justify-center rounded-full bg-white text-3xl font-light leading-none text-[#273451] shadow-2xl transition-all duration-200 hover:scale-110 active:scale-95 sm:right-6 sm:top-6"
+                    >
+                      ×
+                    </button>
+
+                    {/* =================================
+                        FULL CARD
+                    ================================== */}
+
+                    <div
+                      className="bloomwish-card-expanded flex max-h-[94vh] max-w-[96vw] items-center justify-center"
+                      onClick={(event) =>
+                        event.stopPropagation()
+                      }
+                    >
+                      <div className="max-h-[94vh] w-[92vw] max-w-[900px] overflow-auto rounded-[28px] sm:w-[82vw]">
+                        <CardRenderer
+                          card={selectedCard}
+                          recipient={recipient}
+                          message={message}
+                          sender={sender}
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+
+                {/* CARD HINT */}
+
+                <p className="mt-3 text-xs font-medium text-[#927f8a]">
+                  Tap the card to expand
+                </p>
+              </>
+            )}
+
+          </div>
+
+          {/* =====================================
+              OPEN TIME
+          ====================================== */}
+
+          <section className="mx-auto mt-7 max-w-xl rounded-3xl bg-white/90 p-6 shadow-[0_15px_35px_rgba(70,40,60,0.15)]">
+
+            <h2 className="text-center text-lg font-bold text-[#4f4650]">
+              When should they open it?
+            </h2>
+
+            <p className="mt-1 text-center text-xs text-[#927f8a]">
+              Choose when the recipient can open your bouquet.
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+
+              {/* IMMEDIATELY */}
 
               <button
                 type="button"
-                onClick={handleCopy}
-                className="rounded-xl bg-[#df5890] px-4 py-2.5 text-xs font-bold text-white"
+                onClick={() =>
+                  setOpenTime("immediately")
+                }
+                className={`rounded-2xl border p-4 text-sm font-semibold ${
+                  openTime === "immediately"
+                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                    : "border-[#edd8e1] bg-white text-[#766b74]"
+                }`}
               >
-                {copied
-                  ? "Copied ✓"
-                  : "Copy"}
+                Open Immediately
+              </button>
+
+              {/* 5 MINUTES */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenTime("5minutes")
+                }
+                className={`rounded-2xl border p-4 text-sm font-semibold ${
+                  openTime === "5minutes"
+                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                    : "border-[#edd8e1] bg-white text-[#766b74]"
+                }`}
+              >
+                After 5 Minutes
+              </button>
+
+              {/* 1 HOUR */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenTime("1hour")
+                }
+                className={`rounded-2xl border p-4 text-sm font-semibold ${
+                  openTime === "1hour"
+                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                    : "border-[#edd8e1] bg-white text-[#766b74]"
+                }`}
+              >
+                After 1 Hour
+              </button>
+
+              {/* TOMORROW */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenTime("tomorrow")
+                }
+                className={`rounded-2xl border p-4 text-sm font-semibold ${
+                  openTime === "tomorrow"
+                    ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                    : "border-[#edd8e1] bg-white text-[#766b74]"
+                }`}
+              >
+                Tomorrow
               </button>
 
             </div>
 
+            {/* CUSTOM */}
+
             <button
               type="button"
-              onClick={handleShare}
-              className="mt-4 w-full rounded-full bg-[#4f4650] px-7 py-3 font-bold text-white"
+              onClick={() =>
+                setOpenTime("custom")
+              }
+              className={`mt-3 w-full rounded-2xl border p-4 text-sm font-semibold ${
+                openTime === "custom"
+                  ? "border-[#df5890] bg-[#fff0f6] text-[#d4477d]"
+                  : "border-[#edd8e1] bg-white text-[#766b74]"
+              }`}
             >
-              {shared
-                ? "Shared ✓"
-                : "↗ Share Bouquet"}
+              Custom Date & Time
             </button>
 
+            {openTime === "custom" && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+
+                <input
+                  type="date"
+                  value={customDate}
+                  onChange={(e) =>
+                    setCustomDate(
+                      e.target.value
+                    )
+                  }
+                  className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
+                />
+
+                <input
+                  type="time"
+                  value={customTime}
+                  onChange={(e) =>
+                    setCustomTime(
+                      e.target.value
+                    )
+                  }
+                  className="rounded-xl border border-[#edd8e1] bg-white px-4 py-3 text-sm outline-none focus:border-[#df5890]"
+                />
+
+              </div>
+            )}
+
           </section>
-        )}
 
-        <div className="pb-8 pt-7 text-center">
+          {/* =====================================
+              ERROR
+          ====================================== */}
 
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-full border border-[#edcbd9] bg-white px-7 py-3 text-sm font-semibold text-[#766b74]"
-          >
-            ← Back
-          </button>
+          {error && (
+            <p className="mx-auto mt-4 max-w-xl rounded-xl bg-white p-3 text-center text-sm text-[#c55778]">
+              {error}
+            </p>
+          )}
 
-        </div>
+          {/* =====================================
+              GENERATE LINK BUTTON
+          ====================================== */}
 
-      </main>
-    </div>
+          {!generatedLink && (
+            <div className="mt-7 text-center">
+
+              <button
+                type="button"
+                onClick={
+                  handleGenerateLink
+                }
+                disabled={generating}
+                className="rounded-full bg-[#df5890] px-9 py-3.5 font-bold text-white shadow-[0_10px_25px_rgba(223,88,144,0.30)] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              >
+                {generating
+                  ? "Generating Link..."
+                  : "Generate Bouquet Link"}
+              </button>
+
+            </div>
+          )}
+
+          {/* =====================================
+              GENERATED LINK
+          ====================================== */}
+
+          {generatedLink && (
+            <section className="mx-auto mt-5 max-w-lg rounded-3xl bg-white p-5 text-center shadow-lg">
+
+              <h2 className="text-xl font-bold text-[#4f4650]">
+                Your bouquet is ready!
+              </h2>
+
+              <p className="mt-1 text-sm text-[#927f8a]">
+                Share this link with someone special.
+              </p>
+
+              {/* LINK */}
+
+              <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[#efd5e0] bg-[#fff7fa] p-2">
+
+                <input
+                  type="text"
+                  value={generatedLink}
+                  readOnly
+                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-[#4f4650] outline-none"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="rounded-xl bg-[#df5890] px-4 py-2.5 text-xs font-bold text-white"
+                >
+                  {copied
+                    ? "Copied ✓"
+                    : "Copy"}
+                </button>
+
+              </div>
+
+              {/* SHARE */}
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="mt-3 w-full rounded-full bg-[#4f4650] px-6 py-2.5 font-bold text-white transition-transform duration-200 hover:scale-[1.01] active:scale-[0.98]"
+              >
+                {shared
+                  ? "Shared ✓"
+                  : "↗ Share Bouquet"}
+              </button>
+
+            </section>
+          )}
+
+          {/* =====================================
+              BACK
+          ====================================== */}
+
+          <div className="pb-8 pt-7 text-center">
+
+            <button
+              type="button"
+              onClick={onBack}
+              className="rounded-full border border-[#edcbd9] bg-white px-7 py-3 text-sm font-semibold text-[#766b74]"
+            >
+              ← Back
+            </button>
+
+          </div>
+
+        </main>
+      </div>
+    </>
   );
 }
 
