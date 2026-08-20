@@ -24,6 +24,7 @@ app.use(
       "http://localhost:5178",
       "http://localhost:5179",
       "http://localhost:5180",
+      "https://bloomwish-frontend.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
