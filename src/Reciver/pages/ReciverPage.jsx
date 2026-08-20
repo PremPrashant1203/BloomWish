@@ -6,11 +6,18 @@ import GiftRevel from "../components/GiftRevel";
 
 const ReciverPage = ({ shareId }) => {
   const [bouquet, setBouquet] = useState(null);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(false);
 
   const [timerFinished, setTimerFinished] = useState(false);
+
   const [giftOpened, setGiftOpened] = useState(false);
+
+  // ==========================================
+  // LOAD USER 1 BOUQUET
+  // ==========================================
 
   useEffect(() => {
     const loadBouquet = async () => {
@@ -20,20 +27,45 @@ const ReciverPage = ({ shareId }) => {
 
         const data = await getSharedBouquet(shareId);
 
-        console.log("Receiver Bouquet:", data);
+        console.log("🌷 USER 2 RECEIVED BOUQUET:", data);
 
-        if (!data?.success || !data?.bouquet) {
+        // ==========================================
+        // IMPORTANT
+        //
+        // reciverApi.js already returns:
+        // data.bouquet
+        //
+        // So "data" itself is the bouquet.
+        // ==========================================
+
+        if (!data) {
           throw new Error("Bouquet not found");
         }
 
-        setBouquet(data.bouquet);
+        setBouquet(data);
 
-        // Agar timer nahi hai to direct gift open karne ka option
-        if (!data.bouquet.openAt) {
+        // ==========================================
+        // NO TIMER
+        // ==========================================
+
+        if (!data.openAt) {
+          setTimerFinished(true);
+        }
+
+        // ==========================================
+        // TIMER ALREADY FINISHED
+        // ==========================================
+
+        if (
+          data.openAt &&
+          new Date(data.openAt).getTime() <= Date.now()
+        ) {
           setTimerFinished(true);
         }
       } catch (err) {
-        console.error("Receiver Error:", err);
+        console.error("❌ Receiver Error:", err);
+
+        setBouquet(null);
         setError(true);
       } finally {
         setLoading(false);
@@ -45,15 +77,18 @@ const ReciverPage = ({ shareId }) => {
     }
   }, [shareId]);
 
-  // ==============================
+  // ==========================================
   // LOADING
-  // ==============================
+  // ==========================================
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-pink-50">
+      <div className="min-h-screen flex items-center justify-center bg-pink-50 px-4">
         <div className="text-center">
-          <div className="text-5xl mb-4">💐</div>
+
+          <div className="text-5xl mb-4">
+            💐
+          </div>
 
           <h2 className="text-2xl font-semibold text-pink-500">
             Your bouquet is arriving...
@@ -62,20 +97,24 @@ const ReciverPage = ({ shareId }) => {
           <p className="text-gray-500 mt-2">
             Please wait a moment 💗
           </p>
+
         </div>
       </div>
     );
   }
 
-  // ==============================
+  // ==========================================
   // ERROR
-  // ==============================
+  // ==========================================
 
   if (error || !bouquet) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-pink-50">
+      <div className="min-h-screen flex items-center justify-center bg-pink-50 px-4">
         <div className="text-center">
-          <div className="text-5xl mb-4">🥀</div>
+
+          <div className="text-5xl mb-4">
+            🥀
+          </div>
 
           <h2 className="text-2xl font-semibold text-gray-700">
             Bouquet not found
@@ -84,14 +123,17 @@ const ReciverPage = ({ shareId }) => {
           <p className="text-gray-500 mt-2">
             This bouquet link may be invalid or expired.
           </p>
+
         </div>
       </div>
     );
   }
 
-  // ==============================
-  // GIFT OPENED
-  // ==============================
+  // ==========================================
+  // USER 2 OPENED THE GIFT
+  //
+  // SHOW EXACT USER 1 BOUQUET
+  // ==========================================
 
   if (giftOpened) {
     return (
@@ -101,17 +143,21 @@ const ReciverPage = ({ shareId }) => {
     );
   }
 
-  // ==============================
-  // TIMER / GIFT SCREEN
-  // ==============================
+  // ==========================================
+  // TIMER / OPEN GIFT SCREEN
+  // ==========================================
 
   return (
     <div className="min-h-screen bg-pink-100 flex items-center justify-center px-4">
+
       <div className="w-full max-w-2xl text-center">
 
-        {/* TITLE */}
+        {/* ======================================
+            TITLE
+        ====================================== */}
 
         <div className="mb-8">
+
           <div className="text-5xl mb-4">
             💐
           </div>
@@ -123,9 +169,12 @@ const ReciverPage = ({ shareId }) => {
           <p className="text-gray-500 mt-3">
             Someone created this special gift just for you 💗
           </p>
+
         </div>
 
-        {/* TIMER */}
+        {/* ======================================
+            TIMER
+        ====================================== */}
 
         {!timerFinished && bouquet.openAt ? (
           <ReciverTimer
@@ -135,19 +184,34 @@ const ReciverPage = ({ shareId }) => {
             }}
           />
         ) : (
-          /* ==============================
+
+          /* ====================================
              OPEN GIFT
-             ============================== */
+          ==================================== */
 
           <button
             type="button"
             onClick={() => setGiftOpened(true)}
-            className="px-8 py-4 rounded-full bg-pink-500 text-white text-lg font-semibold shadow-lg hover:bg-pink-600 transition"
+            className="
+              px-8
+              py-4
+              rounded-full
+              bg-pink-500
+              text-white
+              text-lg
+              font-semibold
+              shadow-lg
+              hover:bg-pink-600
+              transition
+            "
           >
             Tap to see your gift 💝
           </button>
+
         )}
+
       </div>
+
     </div>
   );
 };
