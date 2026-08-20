@@ -78,6 +78,17 @@ const matchBouquet = (req, res) => {
   try {
     const { flowerIds, wrapId } = req.body;
 
+    console.log("=================================");
+    console.log("MATCH BOUQUET REQUEST");
+    console.log("Flower IDs:", flowerIds);
+    console.log("Wrap ID:", wrapId);
+    console.log("=================================");
+
+
+    // --------------------------------------
+    // VALIDATE FLOWER IDS
+    // --------------------------------------
+
     if (!Array.isArray(flowerIds)) {
       return res.status(400).json({
         success: false,
@@ -85,106 +96,211 @@ const matchBouquet = (req, res) => {
       });
     }
 
-    if (flowerIds.length < 7 || flowerIds.length > 10) {
+
+    // --------------------------------------
+    // REMOVE DUPLICATES
+    // --------------------------------------
+
+    const selectedFlowers = [
+      ...new Set(
+        flowerIds.filter(
+          (id) =>
+            typeof id === "string" &&
+            id.trim() !== ""
+        )
+      ),
+    ];
+
+
+    // --------------------------------------
+    // VALIDATE FLOWER COUNT
+    // BloomWish rule: 1–10 flowers
+    // --------------------------------------
+
+    if (
+      selectedFlowers.length < 1 ||
+      selectedFlowers.length > 10
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Please select between 7 and 10 flowers",
+        message: "Please select between 1 and 10 flowers",
       });
     }
 
-    if (!wrapId) {
+
+    // --------------------------------------
+    // VALIDATE WRAP
+    // --------------------------------------
+
+    if (
+      !wrapId ||
+      typeof wrapId !== "string"
+    ) {
       return res.status(400).json({
         success: false,
         message: "wrapId is required",
       });
     }
 
-    const selectedFlowers = [...new Set(flowerIds)];
+
+    // --------------------------------------
+    // FIND BOUQUETS FOR SELECTED WRAP
+    // --------------------------------------
 
     const availableBouquets = bouquets.filter(
-      (bouquet) => bouquet.wrapId === wrapId
+      (bouquet) =>
+        bouquet.wrapId === wrapId
     );
+
 
     if (availableBouquets.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No bouquets available for this wrap",
+        message:
+          "No bouquets available for this wrap",
       });
     }
 
-    const results = availableBouquets.map((bouquet) => {
-      const bouquetSet = new Set(bouquet.flowerIds);
 
-      let matchedFlowers = 0;
+    // --------------------------------------
+    // CALCULATE MATCH SCORE
+    // --------------------------------------
 
-      selectedFlowers.forEach((flowerId) => {
-        if (bouquetSet.has(flowerId)) {
-          matchedFlowers++;
-        }
-      });
+    const results = availableBouquets.map(
+      (bouquet) => {
+        const bouquetSet = new Set(
+          Array.isArray(bouquet.flowerIds)
+            ? bouquet.flowerIds
+            : []
+        );
 
-      const recall =
-        matchedFlowers / selectedFlowers.length;
+        let matchedFlowers = 0;
 
-      const precision =
-        matchedFlowers / bouquet.flowerIds.length;
 
-      const f1 =
-        precision + recall === 0
-          ? 0
-          : (2 * precision * recall) /
-            (precision + recall);
+        selectedFlowers.forEach(
+          (flowerId) => {
+            if (bouquetSet.has(flowerId)) {
+              matchedFlowers++;
+            }
+          }
+        );
 
-      return {
-        bouquet,
-        matchedFlowers,
-        precision,
-        recall,
-        score: f1,
-      };
-    });
+
+        const recall =
+          selectedFlowers.length === 0
+            ? 0
+            : matchedFlowers /
+              selectedFlowers.length;
+
+
+        const precision =
+          bouquet.flowerIds.length === 0
+            ? 0
+            : matchedFlowers /
+              bouquet.flowerIds.length;
+
+
+        const f1 =
+          precision + recall === 0
+            ? 0
+            : (2 * precision * recall) /
+              (precision + recall);
+
+
+        return {
+          bouquet,
+          matchedFlowers,
+          precision,
+          recall,
+          score: f1,
+        };
+      }
+    );
+
+
+    // --------------------------------------
+    // SORT BEST MATCH
+    // --------------------------------------
 
     results.sort((a, b) => {
       if (b.score !== a.score) {
         return b.score - a.score;
       }
 
-      return b.matchedFlowers - a.matchedFlowers;
+      return (
+        b.matchedFlowers -
+        a.matchedFlowers
+      );
     });
 
+
     const bestMatch = results[0];
+
+
+    // --------------------------------------
+    // RESPONSE
+    // --------------------------------------
 
     return res.status(200).json({
       success: true,
 
       match: {
-        bouquetId: bestMatch.bouquet.bouquetId,
-        wrapId: bestMatch.bouquet.wrapId,
-        flowerIds: bestMatch.bouquet.flowerIds,
-        flowerCount: bestMatch.bouquet.flowerCount,
-        image: bestMatch.bouquet.image,
-        matchedFlowers: bestMatch.matchedFlowers,
+        bouquetId:
+          bestMatch.bouquet.bouquetId,
+
+        wrapId:
+          bestMatch.bouquet.wrapId,
+
+        flowerIds:
+          bestMatch.bouquet.flowerIds,
+
+        flowerCount:
+          bestMatch.bouquet.flowerCount,
+
+        image:
+          bestMatch.bouquet.image,
+
+        matchedFlowers:
+          bestMatch.matchedFlowers,
+
         score: Number(
-          (bestMatch.score * 100).toFixed(2)
+          (
+            bestMatch.score * 100
+          ).toFixed(2)
         ),
       },
 
-      alternatives: results
-        .slice(1, 3)
-        .map((item) => ({
-          bouquetId: item.bouquet.bouquetId,
-          matchedFlowers: item.matchedFlowers,
-          score: Number(
-            (item.score * 100).toFixed(2)
-          ),
-        })),
+      alternatives:
+        results
+          .slice(1, 3)
+          .map((item) => ({
+            bouquetId:
+              item.bouquet.bouquetId,
+
+            matchedFlowers:
+              item.matchedFlowers,
+
+            score: Number(
+              (
+                item.score * 100
+              ).toFixed(2)
+            ),
+          })),
     });
+
   } catch (error) {
-    console.error("Match Bouquet Error:", error);
+    console.error(
+      "Match Bouquet Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
       message: "Unable to match bouquet",
+      error:
+        process.env.NODE_ENV === "production"
+          ? undefined
+          : error.message,
     });
   }
 };
@@ -207,17 +323,30 @@ const createBouquetLink = (req, res) => {
     } = req.body;
 
 
+    console.log("=================================");
+    console.log("CREATE BOUQUET LINK REQUEST");
+    console.log("Bouquet ID:", bouquetId);
+    console.log("Wrap ID:", wrapId);
+    console.log("Flower IDs:", flowerIds);
+    console.log("=================================");
+
+
     // --------------------------------------
-    // VALIDATE BOUQUET
+    // VALIDATE BOUQUET ID
     // --------------------------------------
 
     if (!bouquetId) {
       return res.status(400).json({
         success: false,
-        message: "bouquetId is required",
+        message:
+          "bouquetId is required",
       });
     }
 
+
+    // --------------------------------------
+    // FIND BOUQUET
+    // --------------------------------------
 
     const bouquet = bouquets.find(
       (item) =>
@@ -256,6 +385,24 @@ const createBouquetLink = (req, res) => {
 
 
     // --------------------------------------
+    // FLOWER IDS
+    // --------------------------------------
+
+    const finalFlowerIds =
+      Array.isArray(flowerIds)
+        ? [
+            ...new Set(
+              flowerIds.filter(
+                (id) =>
+                  typeof id === "string" &&
+                  id.trim() !== ""
+              )
+            ),
+          ]
+        : bouquet.flowerIds;
+
+
+    // --------------------------------------
     // SAVE SHARE DATA
     // --------------------------------------
 
@@ -267,9 +414,7 @@ const createBouquetLink = (req, res) => {
       wrapId,
 
       flowerIds:
-        Array.isArray(flowerIds)
-          ? flowerIds
-          : bouquet.flowerIds,
+        finalFlowerIds,
 
       bouquetImage:
         bouquet.image,
@@ -298,12 +443,17 @@ const createBouquetLink = (req, res) => {
 
 
     // --------------------------------------
-    // CREATE FRONTEND LINK
+    // FRONTEND URL
     // --------------------------------------
 
     const frontendUrl =
       process.env.FRONTEND_URL ||
-      "http://localhost:5173";
+      "https://bloomwish-frontend.onrender.com";
+
+
+    // --------------------------------------
+    // CREATE SHARE LINK
+    // --------------------------------------
 
     const link =
       `${frontendUrl}/bouquet/${shareId}`;
@@ -337,6 +487,11 @@ const createBouquetLink = (req, res) => {
       success: false,
       message:
         "Unable to generate bouquet link",
+
+      error:
+        process.env.NODE_ENV === "production"
+          ? undefined
+          : error.message,
     });
   }
 };
@@ -349,6 +504,7 @@ const createBouquetLink = (req, res) => {
 const getSharedBouquet = (req, res) => {
   try {
     const { shareId } = req.params;
+
 
     const sharedBouquet =
       sharedBouquets.get(shareId);
